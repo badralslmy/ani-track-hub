@@ -1,154 +1,118 @@
 
 import { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import AnimeCard from "@/components/anime/AnimeCard";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, FilterX } from "lucide-react";
-import { 
-  trendingAnime, 
-  newReleaseAnime, 
-  seasonalAnime, 
-  recommendedAnime 
-} from "@/data/mock";
+import { Button } from "@/components/ui/button";
+import AnimeCard from "@/components/anime/AnimeCard";
+import { Pagination } from "@/components/ui/pagination";
+import { trendingAnime } from "@/data/mock";
 
-const AnimeBrowse = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  // Combine all anime lists for browse page
-  const allAnime = [
-    ...trendingAnime,
-    ...newReleaseAnime, 
-    ...seasonalAnime,
-    ...recommendedAnime
-  ];
-  
-  // Remove duplicates by id
-  const uniqueAnime = allAnime.filter(
-    (anime, index, self) => index === self.findIndex((a) => a.id === anime.id)
-  );
+const genres = ["Action", "Drama", "Comedy", "Fantasy", "Romance", "Mystery"];
+const years = Array.from({ length: 20 }, (_, i) => `${2025 - i}`);
+const seasons = ["Winter", "Spring", "Summer", "Fall"];
+const ratings = [10, 9, 8, 7, 6];
 
-  // Filter anime based on search query
-  const filteredAnime = searchQuery 
-    ? uniqueAnime.filter(anime => 
-        anime.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : uniqueAnime;
+export default function AnimeBrowse() {
+  const [filters, setFilters] = useState({
+    keyword: "",
+    genre: "",
+    season: "",
+    year: "",
+    rating: ""
+  });
+  const [page, setPage] = useState(1);
+
+  // Mock Filter: Only for demonstration, replace with real filter logic/data later
+  const filtered = trendingAnime
+    .filter((a) =>
+      (filters.keyword === "" || a.title.toLowerCase().includes(filters.keyword.toLowerCase())) &&
+      (filters.genre === "" || a.genres?.includes(filters.genre)) &&
+      (filters.season === "" || a.season === filters.season) &&
+      (filters.year === "" || a.year?.toString() === filters.year) &&
+      (filters.rating === "" || Math.floor(a.rating) >= Number(filters.rating))
+    );
+
+  const perPage = 12; // for UX now, can upgrade to 100/صفحة
+  const total = filtered.length;
+  const maxPage = Math.ceil(total / perPage);
+  const animeList = filtered.slice((page - 1) * perPage, page * perPage);
 
   return (
     <AppLayout>
       <div className="container py-8">
-        <h1 className="text-3xl font-bold mb-8">Browse Anime</h1>
-        
-        {/* Search and filter section */}
-        <div className="mb-8 grid gap-4 md:grid-cols-12">
-          <div className="relative md:col-span-5">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input 
-              placeholder="Search by title, genre, studio..." 
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          
-          <div className="md:col-span-2">
-            <Select defaultValue="all">
-              <SelectTrigger>
-                <SelectValue placeholder="Genre" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Genres</SelectItem>
-                <SelectItem value="action">Action</SelectItem>
-                <SelectItem value="adventure">Adventure</SelectItem>
-                <SelectItem value="comedy">Comedy</SelectItem>
-                <SelectItem value="drama">Drama</SelectItem>
-                <SelectItem value="fantasy">Fantasy</SelectItem>
-                <SelectItem value="romance">Romance</SelectItem>
-                <SelectItem value="sci-fi">Sci-Fi</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="md:col-span-2">
-            <Select defaultValue="all">
-              <SelectTrigger>
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Years</SelectItem>
-                <SelectItem value="2025">2025</SelectItem>
-                <SelectItem value="2024">2024</SelectItem>
-                <SelectItem value="2023">2023</SelectItem>
-                <SelectItem value="2022">2022</SelectItem>
-                <SelectItem value="2021">2021</SelectItem>
-                <SelectItem value="2020">2020</SelectItem>
-                <SelectItem value="older">2019 & older</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="md:col-span-2">
-            <Select defaultValue="all">
-              <SelectTrigger>
-                <SelectValue placeholder="Season" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Seasons</SelectItem>
-                <SelectItem value="spring">Spring</SelectItem>
-                <SelectItem value="summer">Summer</SelectItem>
-                <SelectItem value="fall">Fall</SelectItem>
-                <SelectItem value="winter">Winter</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <Button variant="outline" className="md:col-span-1 flex gap-2">
-            <FilterX className="h-4 w-4" />
-            Reset
+        <h1 className="text-2xl font-bold mb-6">تصفح الأنمي</h1>
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Input
+            placeholder="بحث بعنوان الأنمي"
+            onChange={e => setFilters(f => ({ ...f, keyword: e.target.value }))}
+            className="w-56"
+          />
+          <Select onValueChange={val => setFilters(f => ({ ...f, genre: val }))}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Genre" />
+            </SelectTrigger>
+            <SelectContent>
+              {genres.map(g => (
+                <SelectItem key={g} value={g}>
+                  {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select onValueChange={val => setFilters(f => ({ ...f, year: val }))}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map(y => (
+                <SelectItem key={y} value={y}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select onValueChange={val => setFilters(f => ({ ...f, season: val }))}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Season" />
+            </SelectTrigger>
+            <SelectContent>
+              {seasons.map(s => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select onValueChange={val => setFilters(f => ({ ...f, rating: val }))}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Rating" />
+            </SelectTrigger>
+            <SelectContent>
+              {ratings.map(r => (
+                <SelectItem key={r} value={r.toString()}>
+                  {r}+
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={() => setFilters({ keyword: "", genre: "", season: "", year: "", rating: "" })}>
+            إعادة ضبط
           </Button>
         </div>
-        
-        {/* Results section */}
-        <div className="mb-4">
-          <p className="text-muted-foreground">
-            {filteredAnime.length} results found
-          </p>
-        </div>
-        
-        {/* Anime grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {filteredAnime.map((anime) => (
-            <AnimeCard
-              key={anime.id}
-              id={anime.id}
-              title={anime.title}
-              image={anime.image}
-              rating={anime.rating}
-            />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {animeList.map(anime => (
+            <AnimeCard key={anime.id} id={anime.id} title={anime.title} image={anime.image} rating={anime.rating} />
           ))}
         </div>
-        
-        {/* Pagination */}
-        <div className="mt-8 flex justify-center">
-          <div className="flex space-x-1">
-            <Button variant="outline" size="icon" disabled>
-              &lt;
-            </Button>
-            <Button size="sm" className="bg-anitrack-purple hover:bg-anitrack-purple-dark">1</Button>
-            <Button variant="outline" size="sm">2</Button>
-            <Button variant="outline" size="sm">3</Button>
-            <Button variant="outline" size="sm">4</Button>
-            <Button variant="outline" size="sm">5</Button>
-            <Button variant="outline" size="icon">
-              &gt;
-            </Button>
-          </div>
+        <div className="flex justify-center mt-8">
+          <Pagination
+            page={page}
+            onChange={setPage}
+            total={maxPage}
+          />
         </div>
       </div>
     </AppLayout>
   );
-};
-
-export default AnimeBrowse;
+}

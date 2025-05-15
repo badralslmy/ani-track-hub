@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   LayoutDashboard, 
@@ -17,6 +16,7 @@ import AdminAddAnime from "@/components/admin/AdminAddAnime";
 import AdminUsers from "@/components/admin/AdminUsers";
 import AdminStats from "@/components/admin/AdminStats";
 import AdminSettings from "@/components/admin/AdminSettings";
+import AdminFileStorage from "@/components/admin/AdminFileStorage";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2">
+            <TabsList className="grid grid-cols-2 md:grid-cols-7 gap-2">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <LayoutDashboard className="w-4 h-4" />
                 <span className="hidden sm:inline">Overview</span>
@@ -57,6 +57,9 @@ const AdminDashboard = () => {
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="w-4 h-4" />
                 <span className="hidden sm:inline">Settings</span>
+              </TabsTrigger>
+              <TabsTrigger value="files" className="flex items-center gap-2">
+                <span>الملفات</span>
               </TabsTrigger>
             </TabsList>
             
@@ -82,6 +85,10 @@ const AdminDashboard = () => {
             
             <TabsContent value="settings" className="mt-6">
               <AdminSettings />
+            </TabsContent>
+            
+            <TabsContent value="files" className="mt-6">
+              <AdminFileStorage />
             </TabsContent>
           </Tabs>
         </div>

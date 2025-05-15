@@ -126,7 +126,8 @@ const ANIME = {
         // ...more episodes
       ]
     }
-  ]
+  ],
+  writer: "Hajime Isayama"
 };
 
 const AnimeDetail = () => {
@@ -205,6 +206,10 @@ const AnimeDetail = () => {
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground">Status</h4>
                 <p>{ANIME.status}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">الكاتب</h4>
+                <p>{ANIME.writer || "غير محدد"}</p>
               </div>
             </div>
           </div>
