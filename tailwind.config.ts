@@ -63,7 +63,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom AniTrack colors
+				// Custom AniTrack colors updated to match new logo
 				anitrack: {
 					purple: '#8B5CF6',
 					'purple-light': '#A78BFA',

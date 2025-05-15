@@ -9,7 +9,7 @@ export default function Footer() {
           <Link to="/" className="flex items-center gap-2 mb-4">
             <div className="relative w-6 h-6 overflow-hidden">
               <img
-                src="/lovable-uploads/b1462c62-31bc-48bd-9dd9-fb43ec75f7a6.png"
+                src="/lovable-uploads/e81bef10-14f1-4e17-901d-64735aae78ab.png"
                 alt="AniTrack"
                 className="object-contain w-full h-full"
               />
@@ -40,6 +40,11 @@ export default function Footer() {
             <li>
               <Link to="/mylist" className="text-muted-foreground hover:text-foreground">
                 My List
+              </Link>
+            </li>
+            <li>
+              <Link to="/admin" className="text-muted-foreground hover:text-foreground">
+                Admin
               </Link>
             </li>
           </ul>

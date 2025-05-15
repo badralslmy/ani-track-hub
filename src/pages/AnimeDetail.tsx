@@ -1,323 +1,375 @@
 
-import { useParams } from "react-router-dom";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Star, Plus, Share2, Play } from "lucide-react";
 import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { 
-  BookmarkPlus, 
-  Star, 
-  Clock, 
-  Play,
-  CheckCircle,
-  ThumbsUp
-} from "lucide-react";
-import { 
-  trendingAnime, 
-  seasonalAnime, 
-  recommendedAnime, 
-  continueWatchingAnime 
-} from "@/data/mock";
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import AnimeCard from "@/components/anime/AnimeCard";
+import { recommendedAnime } from "@/data/mock";
+
+// Mock data for current anime
+const ANIME = {
+  id: "1",
+  title: "Attack on Titan: The Final Season",
+  alternativeTitle: "進撃の巨人 The Final Season",
+  description: `Gabi Braun and Falco Grice have been training their entire lives to inherit one of the seven Titans under Marley's control and aid their nation in eradicating the Eldians on Paradis. However, just as all seems well, their peace is interrupted by the return of the Attack Titan and the founding of a new Eldian empire. Now, the Marleyans make desperate attempts to take back what they have lost, as the Eldians struggle with the reality of their new empire.`,
+  coverImage: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx110277-qDRIhu50PXzz.jpg",
+  bannerImage: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/110277-iuGaGN4KeWLF.jpg",
+  status: "Completed",
+  episodes: 16,
+  duration: 24,
+  genres: ["Action", "Drama", "Fantasy", "Mystery"],
+  studios: ["MAPPA"],
+  season: "Winter",
+  seasonYear: 2021,
+  averageScore: 87,
+  popularity: 239423,
+  nextAiringEpisode: null,
+  characters: [
+    {
+      id: "1",
+      name: "Eren Yeager",
+      image: "https://s4.anilist.co/file/anilistcdn/character/large/b40882-F3gr1PJP3Eo0.png",
+      role: "Main",
+      voiceActor: {
+        name: "Yuki Kaji",
+        image: "https://s4.anilist.co/file/anilistcdn/staff/large/n95672-2RfLzncNyvbR.jpg"
+      }
+    },
+    {
+      id: "2",
+      name: "Mikasa Ackerman",
+      image: "https://s4.anilist.co/file/anilistcdn/character/large/b40881-dlqNdbjJ83ZL.jpg",
+      role: "Main",
+      voiceActor: {
+        name: "Yui Ishikawa",
+        image: "https://s4.anilist.co/file/anilistcdn/staff/large/n100142-lJt9Gp3rN00N.png"
+      }
+    },
+    {
+      id: "3",
+      name: "Armin Arlert",
+      image: "https://s4.anilist.co/file/anilistcdn/character/large/b46494-g7xYYuBtYPnO.png",
+      role: "Main",
+      voiceActor: {
+        name: "Marina Inoue",
+        image: "https://s4.anilist.co/file/anilistcdn/staff/large/n95158-ZZWAa2YPDvim.png"
+      }
+    },
+    {
+      id: "4",
+      name: "Reiner Braun",
+      image: "https://s4.anilist.co/file/anilistcdn/character/large/b46496-MMbxALnGxDdR.jpg",
+      role: "Main",
+      voiceActor: {
+        name: "Yoshimasa Hosoya",
+        image: "https://s4.anilist.co/file/anilistcdn/staff/large/n103806-vtuQqPVBcxzp.png"
+      }
+    },
+  ],
+  seasons: [
+    {
+      id: "s1",
+      title: "Season 1",
+      episodes: [
+        { number: 1, title: "To You, 2,000 Years Later", duration: 24 },
+        { number: 2, title: "That Day", duration: 24 },
+        { number: 3, title: "A Dim Light Amid Despair", duration: 24 },
+        // ...more episodes
+      ]
+    },
+    {
+      id: "s2",
+      title: "Season 2",
+      episodes: [
+        { number: 1, title: "Beast Titan", duration: 24 },
+        { number: 2, title: "I'm Home", duration: 24 },
+        { number: 3, title: "Southwestward", duration: 24 },
+        // ...more episodes
+      ]
+    },
+    {
+      id: "s3p1",
+      title: "Season 3 Part 1",
+      episodes: [
+        { number: 1, title: "Smoke Signal", duration: 24 },
+        { number: 2, title: "Pain", duration: 24 },
+        { number: 3, title: "Old Story", duration: 24 },
+        // ...more episodes
+      ]
+    },
+    {
+      id: "s3p2",
+      title: "Season 3 Part 2",
+      episodes: [
+        { number: 1, title: "The Town Where Everything Began", duration: 24 },
+        { number: 2, title: "Thunder Spears", duration: 24 },
+        { number: 3, title: "Descent", duration: 24 },
+        // ...more episodes
+      ]
+    },
+    {
+      id: "s4",
+      title: "The Final Season",
+      episodes: [
+        { number: 1, title: "The Other Side of the Sea", duration: 24 },
+        { number: 2, title: "Midnight Train", duration: 24 },
+        { number: 3, title: "The Door of Hope", duration: 24 },
+        // ...more episodes
+      ]
+    }
+  ]
+};
 
 const AnimeDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState("episodes");
+  const [selectedTab, setSelectedTab] = useState("overview");
+  const [selectedSeason, setSelectedSeason] = useState(ANIME.seasons[ANIME.seasons.length - 1].id);
   
-  // Find anime data from our mock data
-  const allAnime = [
-    ...trendingAnime, 
-    ...seasonalAnime, 
-    ...recommendedAnime, 
-    ...continueWatchingAnime
-  ];
+  // This would fetch the anime data based on the id in a real application
+  console.log("Anime ID:", id);
   
-  // Find the anime with the matching id
-  const animeData = allAnime.find(anime => anime.id === id) || allAnime[0];
-  
-  // Mock data for episodes
-  const episodes = [
-    { season: 1, episodes: Array.from({ length: 12 }, (_, i) => ({ 
-      number: i + 1, 
-      title: `Episode ${i + 1}`, 
-      watched: true,
-      duration: "23:45"
-    }))},
-    { season: 2, episodes: Array.from({ length: 10 }, (_, i) => ({ 
-      number: i + 1, 
-      title: `Episode ${i + 1}`, 
-      watched: i < 6,
-      duration: "23:45" 
-    }))},
-  ];
-  
-  // Mock data for characters
-  const characters = [
-    {
-      id: "c1",
-      name: "Main Character",
-      image: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      role: "Protagonist",
-      voiceActor: "Yuki Kaji",
-      voiceActorImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-    },
-    {
-      id: "c2",
-      name: "Supporting Character",
-      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      role: "Support",
-      voiceActor: "Kana Hanazawa",
-      voiceActorImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-    },
-    {
-      id: "c3",
-      name: "Rival Character",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      role: "Rival",
-      voiceActor: "Mamoru Miyano",
-      voiceActorImage: "https://images.unsplash.com/photo-1552058544-f2b08422138a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-    },
-    {
-      id: "c4",
-      name: "Comic Relief",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      role: "Comic Relief",
-      voiceActor: "Yoshitsugu Matsuoka",
-      voiceActorImage: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-    },
-  ];
+  // Find the currently selected season
+  const currentSeason = ANIME.seasons.find(season => season.id === selectedSeason) || ANIME.seasons[0];
 
   return (
     <AppLayout>
-      {/* Hero Banner */}
-      <div className="relative h-[400px] overflow-hidden">
+      {/* Banner Section */}
+      <div className="relative h-[300px] md:h-[400px] overflow-hidden">
         <div className="absolute inset-0 bg-black">
           <img
-            src={animeData.image}
-            alt={animeData.title}
-            className="w-full h-full object-cover opacity-40"
+            src={ANIME.bannerImage}
+            alt={ANIME.title}
+            className="w-full h-full object-cover opacity-60"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
         </div>
       </div>
       
       <div className="container">
-        <div className="grid md:grid-cols-12 gap-8">
-          {/* Sidebar */}
-          <div className="md:col-span-3 lg:col-span-2">
-            <div className="relative -mt-32 mb-6">
-              <img
-                src={animeData.image}
-                alt={animeData.title}
-                className="w-full aspect-[2/3] object-cover rounded-lg shadow-xl border-4 border-background"
+        <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6 -mt-32 md:-mt-40 mb-6 relative z-10">
+          {/* Anime Poster */}
+          <div className="hidden md:block">
+            <div className="rounded-lg overflow-hidden border shadow-lg">
+              <img 
+                src={ANIME.coverImage} 
+                alt={ANIME.title}
+                className="w-full aspect-[2/3] object-cover"
               />
             </div>
             
-            <div className="space-y-3">
+            <div className="mt-4 space-y-3">
               <Button className="w-full bg-anitrack-purple hover:bg-anitrack-purple-dark gap-2">
-                <Play className="h-4 w-4 fill-white" />
-                Watch Now
+                <Plus className="w-4 h-4" /> Add to List
               </Button>
               
-              <Button variant="outline" className="w-full gap-2">
-                <BookmarkPlus className="h-4 w-4" />
-                Add to List
-              </Button>
-              
-              <div className="flex gap-2 py-3">
-                <Button variant="outline" size="icon" className="flex-1">
-                  <CheckCircle className="h-4 w-4" />
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" className="w-full">
+                  <Star className="w-4 h-4 mr-2" /> Rate
                 </Button>
-                <Button variant="outline" size="icon" className="flex-1">
-                  <Clock className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" className="flex-1">
-                  <ThumbsUp className="h-4 w-4" />
+                <Button variant="outline" className="w-full">
+                  <Share2 className="w-4 h-4 mr-2" /> Share
                 </Button>
               </div>
             </div>
             
-            <div className="mt-6 space-y-4 text-sm">
+            <div className="mt-6 space-y-4">
               <div>
-                <span className="text-muted-foreground">Type:</span>
-                <span className="ml-2">TV</span>
+                <h4 className="text-sm font-medium text-muted-foreground">Studios</h4>
+                <p>{ANIME.studios.join(", ")}</p>
               </div>
+              
               <div>
-                <span className="text-muted-foreground">Episodes:</span>
-                <span className="ml-2">24</span>
+                <h4 className="text-sm font-medium text-muted-foreground">Season</h4>
+                <p>{ANIME.season} {ANIME.seasonYear}</p>
               </div>
+              
               <div>
-                <span className="text-muted-foreground">Status:</span>
-                <span className="ml-2">Finished Airing</span>
+                <h4 className="text-sm font-medium text-muted-foreground">Episodes</h4>
+                <p>{ANIME.episodes} episodes</p>
               </div>
+              
               <div>
-                <span className="text-muted-foreground">Aired:</span>
-                <span className="ml-2">Apr 3, 2024 to Sep 18, 2024</span>
+                <h4 className="text-sm font-medium text-muted-foreground">Duration</h4>
+                <p>{ANIME.duration} minutes</p>
               </div>
+              
               <div>
-                <span className="text-muted-foreground">Studios:</span>
-                <span className="ml-2">MAPPA</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Source:</span>
-                <span className="ml-2">Manga</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Genres:</span>
-                <div className="mt-1 flex flex-wrap gap-1">
-                  <span className="px-2 py-1 bg-secondary text-xs rounded-full">Action</span>
-                  <span className="px-2 py-1 bg-secondary text-xs rounded-full">Adventure</span>
-                  <span className="px-2 py-1 bg-secondary text-xs rounded-full">Fantasy</span>
-                </div>
+                <h4 className="text-sm font-medium text-muted-foreground">Status</h4>
+                <p>{ANIME.status}</p>
               </div>
             </div>
           </div>
           
-          {/* Main Content */}
-          <div className="md:col-span-9 lg:col-span-10">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">{animeData.title}</h1>
-            
-            <div className="flex items-center gap-3 mb-6 text-sm">
-              <div className="flex items-center text-yellow-500">
-                <Star className="h-4 w-4 fill-yellow-500" />
-                <span className="ml-1 font-medium">{animeData.rating?.toFixed(1) || "9.1"}</span>
+          {/* Anime Details */}
+          <div className="space-y-6">
+            <div className="md:flex md:items-start md:gap-6">
+              <div className="md:hidden mb-4">
+                <div className="rounded-lg overflow-hidden border shadow-lg w-[200px] mx-auto">
+                  <img 
+                    src={ANIME.coverImage} 
+                    alt={ANIME.title}
+                    className="w-full aspect-[2/3] object-cover"
+                  />
+                </div>
               </div>
-              <span className="text-muted-foreground">2024</span>
-              <span className="text-muted-foreground">TV</span>
-              <span className="text-muted-foreground">HD</span>
-            </div>
-            
-            <div className="mb-8">
-              <h3 className="text-lg font-medium mb-2">Synopsis</h3>
-              <p className="text-muted-foreground">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam euismod, nisi vel consectetur
-                interdum, nisl nisi consectetur nisi, eget consectetur nisi nisi vel nisi. Nam euismod, 
-                nisi vel consectetur interdum, nisl nisi consectetur nisi, eget consectetur nisi nisi vel nisi.
-                Nam euismod, nisi vel consectetur interdum, nisl nisi consectetur nisi, eget consectetur nisi
-                nisi vel nisi.
-              </p>
-            </div>
-            
-            <Tabs defaultValue="episodes" value={activeTab} onValueChange={setActiveTab} className="mt-6">
-              <TabsList className="mb-6">
-                <TabsTrigger value="episodes">Episodes</TabsTrigger>
-                <TabsTrigger value="characters">Characters</TabsTrigger>
-                <TabsTrigger value="staff">Staff</TabsTrigger>
-                <TabsTrigger value="reviews">Reviews</TabsTrigger>
-              </TabsList>
               
-              <TabsContent value="episodes" className="pt-2">
-                <div className="space-y-6">
-                  {episodes.map((season, index) => (
-                    <div key={index}>
-                      <h3 className="text-lg font-medium mb-4">Season {season.season}</h3>
-                      <div className="grid gap-3">
-                        {season.episodes.map((episode) => (
-                          <div 
-                            key={episode.number} 
-                            className="flex items-center bg-card p-3 rounded-lg hover:bg-accent/50 cursor-pointer"
-                          >
-                            <div className="mr-4 text-muted-foreground">
-                              {episode.watched ? (
-                                <CheckCircle className="h-5 w-5 text-anitrack-purple" />
-                              ) : (
-                                <span className="font-medium">{episode.number}</span>
-                              )}
-                            </div>
-                            
-                            <div className="flex-1">
-                              <p className={`font-medium ${episode.watched ? "text-muted-foreground" : ""}`}>
-                                Episode {episode.number}
-                              </p>
-                            </div>
-                            
-                            <div className="text-muted-foreground text-sm">
-                              {episode.duration}
-                            </div>
-                            
-                            <Button variant="ghost" size="icon" className="ml-2">
-                              <Play className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+              <div className="space-y-4 flex-1">
+                <div className="space-y-1">
+                  <h1 className="text-2xl md:text-3xl font-bold">{ANIME.title}</h1>
+                  {ANIME.alternativeTitle && (
+                    <p className="text-muted-foreground">{ANIME.alternativeTitle}</p>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {ANIME.genres.map((genre) => (
+                    <span key={genre} className="px-2 py-1 text-xs rounded-full bg-secondary text-secondary-foreground">
+                      {genre}
+                    </span>
                   ))}
                 </div>
+                
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                    <span className="ml-1 font-medium">{ANIME.averageScore / 10}</span>
+                  </div>
+                  <Separator orientation="vertical" className="h-4" />
+                  <span className="text-sm text-muted-foreground">{ANIME.popularity.toLocaleString()} members</span>
+                </div>
+                
+                <div className="md:hidden mt-4 space-y-3">
+                  <Button className="w-full bg-anitrack-purple hover:bg-anitrack-purple-dark gap-2">
+                    <Plus className="w-4 h-4" /> Add to List
+                  </Button>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button variant="outline" className="w-full">
+                      <Star className="w-4 h-4 mr-2" /> Rate
+                    </Button>
+                    <Button variant="outline" className="w-full">
+                      <Share2 className="w-4 h-4 mr-2" /> Share
+                    </Button>
+                  </div>
+                </div>
+                
+                <p className="text-muted-foreground">{ANIME.description}</p>
+              </div>
+            </div>
+            
+            <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="episodes">Episodes</TabsTrigger>
+                <TabsTrigger value="characters">Characters</TabsTrigger>
+                <TabsTrigger value="related">Related</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="episodes" className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <h3 className="font-medium">Seasons</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {ANIME.seasons.map((season) => (
+                      <Button
+                        key={season.id}
+                        variant={selectedSeason === season.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedSeason(season.id)}
+                      >
+                        {season.title}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{currentSeason.title}</CardTitle>
+                    <CardDescription>
+                      {currentSeason.episodes.length} episodes
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="divide-y">
+                      {currentSeason.episodes.map((episode) => (
+                        <div key={episode.number} className="flex items-center p-4 hover:bg-muted/50">
+                          <div className="w-10 text-center font-medium">{episode.number}</div>
+                          <div className="flex-1 ml-2">{episode.title}</div>
+                          <Button variant="ghost" size="icon" className="ml-auto">
+                            <Play className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
               
-              <TabsContent value="characters" className="pt-2">
-                <div className="grid sm:grid-cols-2 gap-6">
-                  {characters.map((character) => (
-                    <div key={character.id} className="flex bg-card rounded-lg overflow-hidden">
-                      <div className="w-1/3">
+              <TabsContent value="characters" className="space-y-6">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {ANIME.characters.map((character) => (
+                    <div key={character.id} className="flex border rounded-lg overflow-hidden">
+                      <div className="w-16 h-20 relative overflow-hidden shrink-0">
                         <img 
                           src={character.image} 
                           alt={character.name}
-                          className="w-full h-full object-cover"
+                          className="absolute inset-0 w-full h-full object-cover"
                         />
                       </div>
-                      
-                      <div className="p-4 flex-1">
+                      <div className="p-3 flex-1">
                         <h4 className="font-medium">{character.name}</h4>
-                        <p className="text-sm text-muted-foreground mb-4">{character.role}</p>
-                        
-                        <div className="flex items-center">
-                          <img 
-                            src={character.voiceActorImage} 
-                            alt={character.voiceActor}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div className="ml-3">
-                            <p className="text-sm">{character.voiceActor}</p>
-                            <p className="text-xs text-muted-foreground">Voice Actor</p>
-                          </div>
-                        </div>
+                        <p className="text-xs text-muted-foreground">{character.role}</p>
+                      </div>
+                      <div className="w-16 h-20 relative overflow-hidden shrink-0 border-l">
+                        <img 
+                          src={character.voiceActor.image} 
+                          alt={character.voiceActor.name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-3 flex-1">
+                        <h4 className="font-medium">{character.voiceActor.name}</h4>
+                        <p className="text-xs text-muted-foreground">Japanese</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </TabsContent>
               
-              <TabsContent value="staff" className="pt-2">
-                <div className="text-center py-8 text-muted-foreground">
-                  Staff information will be available soon.
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="reviews" className="pt-2">
-                <div className="text-center py-8 text-muted-foreground">
-                  No reviews available yet.
+              <TabsContent value="related" className="space-y-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {recommendedAnime.slice(0, 5).map((anime) => (
+                    <AnimeCard
+                      key={anime.id}
+                      anime={anime}
+                    />
+                  ))}
                 </div>
               </TabsContent>
             </Tabs>
           </div>
         </div>
-      </div>
-      
-      <div className="container py-12">
-        <h2 className="section-title mb-6">Similar Anime</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {recommendedAnime.slice(0, 6).map((anime) => (
-            <div key={anime.id} className="anime-card">
-              <img
-                src={anime.image}
-                alt={anime.title}
-                className="anime-card-image"
+        
+        {/* Recommendations */}
+        <div className="my-10">
+          <h2 className="section-title">You Might Also Like</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {recommendedAnime.slice(0, 10).map((anime) => (
+              <AnimeCard
+                key={anime.id}
+                anime={anime}
               />
-              <div className="anime-card-content">
-                <div className="flex items-center mb-1 text-yellow-400">
-                  <Star size={14} className="fill-yellow-400" />
-                  <span className="text-xs ml-1">{anime.rating?.toFixed(1)}</span>
-                </div>
-                <h3 className="font-medium text-sm line-clamp-2">{anime.title}</h3>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </AppLayout>

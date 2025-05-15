@@ -4,6 +4,7 @@ import { Search, Bell, User, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,7 +16,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-2">
             <div className="relative w-8 h-8 overflow-hidden">
               <img
-                src="/lovable-uploads/b1462c62-31bc-48bd-9dd9-fb43ec75f7a6.png"
+                src="/lovable-uploads/e81bef10-14f1-4e17-901d-64735aae78ab.png"
                 alt="AniTrack"
                 className="object-contain w-full h-full"
               />
@@ -45,6 +46,12 @@ export default function Navbar() {
             >
               My List
             </Link>
+            <Link
+              to="/admin"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Admin
+            </Link>
           </nav>
         </div>
 
@@ -53,6 +60,7 @@ export default function Navbar() {
             <Search className="h-[1.2rem] w-[1.2rem]" />
             <span className="sr-only">Search</span>
           </Button>
+          <ThemeToggle />
           <Button variant="ghost" size="icon" className="rounded-full">
             <Bell className="h-[1.2rem] w-[1.2rem]" />
             <span className="sr-only">Notifications</span>
@@ -100,10 +108,18 @@ export default function Navbar() {
               >
                 My List
               </Link>
+              <Link
+                to="/admin"
+                className="p-2 hover:bg-secondary rounded-md"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Admin
+              </Link>
               <div className="flex items-center gap-4 mt-2 pt-2 border-t">
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Search className="h-5 w-5" />
                 </Button>
+                <ThemeToggle />
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Bell className="h-5 w-5" />
                 </Button>

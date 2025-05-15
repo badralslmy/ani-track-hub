@@ -9,6 +9,7 @@ import AnimeBrowse from "./pages/AnimeBrowse";
 import MyList from "./pages/MyList";
 import AnimeDetail from "./pages/AnimeDetail";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/browse" element={<AnimeBrowse />} />
           <Route path="/mylist" element={<MyList />} />
           <Route path="/anime/:id" element={<AnimeDetail />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
