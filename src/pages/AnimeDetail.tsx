@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
@@ -350,7 +349,10 @@ const AnimeDetail = () => {
                   {recommendedAnime.slice(0, 5).map((anime) => (
                     <AnimeCard
                       key={anime.id}
-                      anime={anime}
+                      id={anime.id}
+                      title={anime.title}
+                      image={anime.image}
+                      rating={anime.rating}
                     />
                   ))}
                 </div>
@@ -366,7 +368,10 @@ const AnimeDetail = () => {
             {recommendedAnime.slice(0, 10).map((anime) => (
               <AnimeCard
                 key={anime.id}
-                anime={anime}
+                id={anime.id}
+                title={anime.title}
+                image={anime.image}
+                rating={anime.rating}
               />
             ))}
           </div>
