@@ -5,8 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import AnimeCard from "@/components/anime/AnimeCard";
-import { Pagination } from "@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { trendingAnime } from "@/data/mock";
+
+// Extended type for anime with additional filter properties
+interface ExtendedAnime {
+  id: string;
+  title: string;
+  image: string;
+  rating?: number;
+  genres?: string[];
+  season?: string;
+  year?: number;
+}
 
 const genres = ["Action", "Drama", "Comedy", "Fantasy", "Romance", "Mystery"];
 const years = Array.from({ length: 20 }, (_, i) => `${2025 - i}`);
@@ -27,10 +38,10 @@ export default function AnimeBrowse() {
   const filtered = trendingAnime
     .filter((a) =>
       (filters.keyword === "" || a.title.toLowerCase().includes(filters.keyword.toLowerCase())) &&
-      (filters.genre === "" || a.genres?.includes(filters.genre)) &&
-      (filters.season === "" || a.season === filters.season) &&
-      (filters.year === "" || a.year?.toString() === filters.year) &&
-      (filters.rating === "" || Math.floor(a.rating) >= Number(filters.rating))
+      (filters.genre === "" || (a as ExtendedAnime).genres?.includes(filters.genre)) &&
+      (filters.season === "" || (a as ExtendedAnime).season === filters.season) &&
+      (filters.year === "" || (a as ExtendedAnime).year?.toString() === filters.year) &&
+      (filters.rating === "" || Math.floor(a.rating || 0) >= Number(filters.rating))
     );
 
   const perPage = 12; // for UX now, can upgrade to 100/صفحة
@@ -106,11 +117,48 @@ export default function AnimeBrowse() {
           ))}
         </div>
         <div className="flex justify-center mt-8">
-          <Pagination
-            page={page}
-            onChange={setPage}
-            total={maxPage}
-          />
+          {/* Fixed Pagination component implementation */}
+          <Pagination>
+            <PaginationContent>
+              {page > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious onClick={() => setPage(p => Math.max(1, p - 1))} />
+                </PaginationItem>
+              )}
+              
+              {Array.from({length: Math.min(5, maxPage)}, (_, i) => {
+                // Show pages around current page
+                let pageNum = page;
+                if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= maxPage - 2) {
+                  pageNum = maxPage - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                
+                if (pageNum > 0 && pageNum <= maxPage) {
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink 
+                        isActive={pageNum === page}
+                        onClick={() => setPage(pageNum)}
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+                return null;
+              })}
+              
+              {page < maxPage && (
+                <PaginationItem>
+                  <PaginationNext onClick={() => setPage(p => Math.min(maxPage, p + 1))} />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
         </div>
       </div>
     </AppLayout>
