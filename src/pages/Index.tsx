@@ -4,12 +4,20 @@ import HeroBanner from "@/components/home/HeroBanner";
 import AnimeSection from "@/components/home/AnimeSection";
 import AnimeCard from "@/components/anime/AnimeCard";
 import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
+import { 
   trendingAnime,
   continueWatchingAnime,
   seasonalAnime,
   newReleaseAnime,
   recommendedAnime 
 } from "@/data/mock";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   // Function to shuffle sections (except hero banner)
@@ -63,12 +71,31 @@ const Index = () => {
       <HeroBanner />
       
       <section className="container py-8">
-        <h2 className="section-title">Top 10 Anime</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-4">
-          {top10Anime.map(anime => (
-            <AnimeCard key={anime.id} id={anime.id} title={anime.title} image={anime.image} rating={anime.rating} />
-          ))}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Top 10 Anime</h2>
+          <Link 
+            to="/browse?sort=top" 
+            className="text-sm text-anitrack-purple hover:text-anitrack-purple-light"
+          >
+            View All
+          </Link>
         </div>
+        <Carousel className="w-full">
+          <CarouselContent>
+            {top10Anime.map(anime => (
+              <CarouselItem key={anime.id} className="md:basis-1/5 lg:basis-1/5">
+                <AnimeCard 
+                  id={anime.id} 
+                  title={anime.title} 
+                  image={anime.image} 
+                  rating={anime.rating} 
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </section>
 
       {sections.map((section, index) => (

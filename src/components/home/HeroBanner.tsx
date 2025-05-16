@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Star } from "lucide-react";
 import { heroItems, trendingAnime } from "@/data/mock";
+import { Link } from "react-router-dom";
 
 export default function HeroBanner() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -55,24 +56,35 @@ export default function HeroBanner() {
           <h1 className="text-3xl md:text-5xl font-bold text-white mb-3">
             {activeItem.title}
           </h1>
-          <p className="text-white/80 mb-6 max-w-md line-clamp-3">
-            {activeItem.description}
-          </p>
+          
+          {activeItem.type !== "top5" && (
+            <p className="text-white/80 mb-6 max-w-md line-clamp-3">
+              {activeItem.description}
+            </p>
+          )}
 
           {activeItem.type === "top5" ? (
-            <div className="flex gap-3 overflow-x-auto pb-4 mt-4">
+            <div className="flex flex-wrap gap-4 mt-4">
               {top5Anime.map((anime, index) => (
-                <div key={anime.id} className="flex-shrink-0 relative">
-                  <div className="absolute -top-3 -left-3 w-8 h-8 bg-anitrack-purple rounded-full flex items-center justify-center text-white font-bold">
+                <Link 
+                  key={anime.id} 
+                  to={`/anime/${anime.id}`}
+                  className="relative group"
+                >
+                  <div className="absolute -top-3 -left-3 w-8 h-8 bg-anitrack-purple rounded-full flex items-center justify-center text-white font-bold z-10">
                     {index + 1}
                   </div>
-                  <img 
-                    src={anime.image} 
-                    alt={anime.title} 
-                    className="w-24 h-36 object-cover rounded-md"
-                  />
-                  <p className="text-white text-xs mt-1 w-24 truncate">{anime.title}</p>
-                </div>
+                  <div className="overflow-hidden rounded-md transition-all duration-300 group-hover:scale-105">
+                    <img 
+                      src={anime.image} 
+                      alt={anime.title} 
+                      className="w-36 h-52 object-cover"
+                    />
+                  </div>
+                  <p className="text-white font-medium text-sm mt-2 w-36 truncate">
+                    {anime.title}
+                  </p>
+                </Link>
               ))}
             </div>
           ) : (
