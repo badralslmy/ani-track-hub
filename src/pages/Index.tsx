@@ -1,7 +1,8 @@
+
 import AppLayout from "@/components/layout/AppLayout";
 import HeroBanner from "@/components/home/HeroBanner";
 import AnimeSection from "@/components/home/AnimeSection";
-import AnimeCard from "@/components/home/AnimeCard";
+import AnimeCard from "@/components/anime/AnimeCard";
 import { 
   trendingAnime,
   continueWatchingAnime,

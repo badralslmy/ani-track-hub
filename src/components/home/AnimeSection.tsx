@@ -3,6 +3,13 @@ import { Button } from "@/components/ui/button";
 import AnimeCard from "../anime/AnimeCard";
 import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext
+} from "@/components/ui/carousel";
 
 interface AnimeSectionProps {
   title: string;
@@ -35,18 +42,25 @@ export default function AnimeSection({
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {animeList.map((anime) => (
-          <AnimeCard
-            key={anime.id}
-            id={anime.id}
-            title={anime.title}
-            image={anime.image}
-            rating={anime.rating}
-            episodesWatched={anime.episodesWatched}
-            totalEpisodes={anime.totalEpisodes}
-          />
-        ))}
+      <div className="relative">
+        <Carousel opts={{ align: "start" }}>
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {animeList.map((anime) => (
+              <CarouselItem key={anime.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5 xl:basis-1/6">
+                <AnimeCard
+                  id={anime.id}
+                  title={anime.title}
+                  image={anime.image}
+                  rating={anime.rating}
+                  episodesWatched={anime.episodesWatched}
+                  totalEpisodes={anime.totalEpisodes}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-1 lg:-left-4 bg-black/50 hover:bg-black/80 border-none text-white" />
+          <CarouselNext className="right-1 lg:-right-4 bg-black/50 hover:bg-black/80 border-none text-white" />
+        </Carousel>
       </div>
     </section>
   );
