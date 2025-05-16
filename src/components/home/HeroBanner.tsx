@@ -64,24 +64,26 @@ export default function HeroBanner() {
           )}
 
           {activeItem.type === "top5" ? (
-            <div className="flex flex-wrap gap-4 mt-4">
+            <div className="flex gap-4 mt-4 overflow-x-auto pb-4">
               {top5Anime.map((anime, index) => (
                 <Link 
                   key={anime.id} 
                   to={`/anime/${anime.id}`}
-                  className="relative group"
+                  className="relative group flex-shrink-0"
                 >
-                  <div className="absolute -top-3 -left-3 w-8 h-8 bg-anitrack-purple rounded-full flex items-center justify-center text-white font-bold z-10">
-                    {index + 1}
+                  <div className="absolute -top-3 -left-3 z-10">
+                    <div className="w-8 h-8 bg-gradient-to-br from-anitrack-purple to-anitrack-purple-dark rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-anitrack-purple/30">
+                      {index + 1}
+                    </div>
                   </div>
                   <div className="overflow-hidden rounded-md transition-all duration-300 group-hover:scale-105">
                     <img 
                       src={anime.image} 
                       alt={anime.title} 
-                      className="w-36 h-52 object-cover"
+                      className="w-32 h-48 sm:w-36 sm:h-52 object-cover"
                     />
                   </div>
-                  <p className="text-white font-medium text-sm mt-2 w-36 truncate">
+                  <p className="text-white font-medium text-sm mt-2 w-32 sm:w-36 truncate">
                     {anime.title}
                   </p>
                 </Link>
