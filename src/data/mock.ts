@@ -1,4 +1,3 @@
-
 // Mock data for the application
 
 // Hero banner items
@@ -23,6 +22,13 @@ export const heroItems = [
     description:
       "In a world where most people have superpowers, middle school student Izuku Midoriya is part of 20 percent of the population born without them. But his dream is to become a superhero and enroll at the prestigious U.A. High School.",
     backgroundImage: "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?q=80&w=2073&auto=format&fit=crop&ixlib=rb-4.0.3",
+  },
+  {
+    type: "top5",
+    title: "Top 5 Anime This Season",
+    description:
+      "Check out the highest-rated anime currently airing this season. These titles have been ranked based on viewer ratings and popularity across the platform.",
+    backgroundImage: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=6000&auto=format&fit=crop&ixlib=rb-4.0.3",
   },
 ];
 
