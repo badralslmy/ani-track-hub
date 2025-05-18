@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Star } from "lucide-react";
-import { heroItems, trendingAnime } from "@/data/mock";
+import { heroItems } from "@/data/mock";
 import { Link } from "react-router-dom";
 
 export default function HeroBanner() {
@@ -17,12 +17,6 @@ export default function HeroBanner() {
   }, []);
 
   const activeItem = heroItems[activeIndex];
-
-  // Get top 5 anime for the "Top 5" hero banner type
-  const top5Anime = trendingAnime
-    .slice()
-    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
-    .slice(0, 5);
 
   return (
     <section className="relative h-[500px] md:h-[600px] overflow-hidden">
@@ -47,9 +41,19 @@ export default function HeroBanner() {
               <span>✦</span> Recommended For You
             </div>
           )}
-          {activeItem.type === "top5" && (
+          {activeItem.type === "rating" && (
             <div className="inline-flex items-center gap-2 mb-4 bg-anitrack-purple/20 text-anitrack-purple px-3 py-1 rounded-full text-sm">
-              <Star className="h-4 w-4" /> Top 5 Anime
+              <Star className="h-4 w-4" /> Highly Rated
+            </div>
+          )}
+          {activeItem.type === "seasonal" && (
+            <div className="inline-flex items-center gap-2 mb-4 bg-anitrack-purple/20 text-anitrack-purple px-3 py-1 rounded-full text-sm">
+              <span>✦</span> Seasonal Favorite
+            </div>
+          )}
+          {activeItem.type === "trending" && (
+            <div className="inline-flex items-center gap-2 mb-4 bg-anitrack-purple/20 text-anitrack-purple px-3 py-1 rounded-full text-sm">
+              <span>🔥</span> Trending Now
             </div>
           )}
 
@@ -57,49 +61,19 @@ export default function HeroBanner() {
             {activeItem.title}
           </h1>
           
-          {activeItem.type !== "top5" && (
-            <p className="text-white/80 mb-6 max-w-md line-clamp-3">
-              {activeItem.description}
-            </p>
-          )}
+          <p className="text-white/80 mb-6 max-w-md line-clamp-3">
+            {activeItem.description}
+          </p>
 
-          {activeItem.type === "top5" ? (
-            <div className="flex gap-4 mt-4 overflow-x-auto pb-4">
-              {top5Anime.map((anime, index) => (
-                <Link 
-                  key={anime.id} 
-                  to={`/anime/${anime.id}`}
-                  className="relative group flex-shrink-0"
-                >
-                  <div className="absolute -top-3 -left-3 z-10">
-                    <div className="w-8 h-8 bg-gradient-to-br from-anitrack-purple to-anitrack-purple-dark rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-anitrack-purple/30">
-                      {index + 1}
-                    </div>
-                  </div>
-                  <div className="overflow-hidden rounded-md transition-all duration-300 group-hover:scale-105">
-                    <img 
-                      src={anime.image} 
-                      alt={anime.title} 
-                      className="w-32 h-48 sm:w-36 sm:h-52 object-cover"
-                    />
-                  </div>
-                  <p className="text-white font-medium text-sm mt-2 w-32 sm:w-36 truncate">
-                    {anime.title}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-3">
-              <Button 
-                className="bg-anitrack-purple hover:bg-anitrack-purple-dark text-white gap-2"
-              >
-                <Play className="h-4 w-4 fill-white" />
-                {activeItem.type === "countdown" ? "Watch Previous Episode" : "Start Watching"}
-              </Button>
-              <Button variant="secondary">Add to My List</Button>
-            </div>
-          )}
+          <div className="flex flex-wrap gap-3">
+            <Button 
+              className="bg-anitrack-purple hover:bg-anitrack-purple-dark text-white gap-2"
+            >
+              <Play className="h-4 w-4 fill-white" />
+              {activeItem.type === "countdown" ? "Watch Previous Episode" : "Start Watching"}
+            </Button>
+            <Button variant="secondary">Add to My List</Button>
+          </div>
 
           {activeItem.type === "countdown" && (
             <div className="mt-8 flex gap-4">

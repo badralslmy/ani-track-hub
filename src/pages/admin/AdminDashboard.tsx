@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   LayoutDashboard, 
@@ -5,7 +6,8 @@ import {
   Database, 
   FilePlus, 
   Users, 
-  BarChart 
+  BarChart,
+  ExternalLink
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +19,7 @@ import AdminUsers from "@/components/admin/AdminUsers";
 import AdminStats from "@/components/admin/AdminStats";
 import AdminSettings from "@/components/admin/AdminSettings";
 import AdminFileStorage from "@/components/admin/AdminFileStorage";
+import AdminAniListIntegration from "@/components/admin/AdminAniListIntegration";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -33,7 +36,7 @@ const AdminDashboard = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-2 md:grid-cols-7 gap-2">
+            <TabsList className="grid grid-cols-2 md:grid-cols-8 gap-2">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <LayoutDashboard className="w-4 h-4" />
                 <span className="hidden sm:inline">Overview</span>
@@ -45,6 +48,10 @@ const AdminDashboard = () => {
               <TabsTrigger value="add-anime" className="flex items-center gap-2">
                 <FilePlus className="w-4 h-4" />
                 <span className="hidden sm:inline">Add Anime</span>
+              </TabsTrigger>
+              <TabsTrigger value="anilist" className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                <span className="hidden sm:inline">AniList API</span>
               </TabsTrigger>
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
@@ -73,6 +80,10 @@ const AdminDashboard = () => {
             
             <TabsContent value="add-anime" className="mt-6">
               <AdminAddAnime />
+            </TabsContent>
+            
+            <TabsContent value="anilist" className="mt-6">
+              <AdminAniListIntegration />
             </TabsContent>
             
             <TabsContent value="users" className="mt-6">

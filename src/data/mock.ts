@@ -24,12 +24,19 @@ export const heroItems = [
     backgroundImage: "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?q=80&w=2073&auto=format&fit=crop&ixlib=rb-4.0.3",
   },
   {
-    type: "top5",
-    title: "Top 5 Anime This Season",
+    type: "trending",
+    title: "Jujutsu Kaisen",
     description:
-      "Check out the highest-rated anime currently airing this season. These titles have been ranked based on viewer ratings and popularity across the platform.",
-    backgroundImage: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=6000&auto=format&fit=crop&ixlib=rb-4.0.3",
+      "Yuji Itadori is an unnaturally fit high school student living a normal life. But when he consumes the finger of a legendary curse known as Sukuna Ryomen, he finds himself thrown into the world of Curses and Curse Users.",
+    backgroundImage: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.0.3",
   },
+  {
+    type: "seasonal",
+    title: "Frieren: Beyond Journey's End",
+    description:
+      "The adventure is over but life goes on for an elf mage just beginning to learn what living is all about. Frieren and her courageous fellow adventurers have defeated the Demon King and brought peace to the land.",
+    backgroundImage: "https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?q=80&w=1080&auto=format&fit=crop&ixlib=rb-4.0.3",
+  }
 ];
 
 // Trending anime

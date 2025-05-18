@@ -13,8 +13,23 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 const AdminSettings = () => {
+  const [anilistId, setAnilistId] = useState<string>("26586");
+  const [anilistSecret, setAnilistSecret] = useState<string>("rCCmKCWrxTFiuayWx9O46u9pFjzMnoZ87v3eZaiu");
+
+  const handleSaveApiChanges = () => {
+    // In a real app, you would save these to a database
+    localStorage.setItem('anilist_id', anilistId);
+    localStorage.setItem('anilist_secret', anilistSecret);
+    toast({
+      title: "Settings saved",
+      description: "Your API settings have been updated successfully.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -108,12 +123,25 @@ const AdminSettings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="mal-api">MyAnimeList API Key</Label>
-                <Input id="mal-api" type="password" defaultValue="•••••••••••••••••" />
+                <Label htmlFor="anilist-id">AniList Client ID</Label>
+                <Input 
+                  id="anilist-id" 
+                  value={anilistId}
+                  onChange={(e) => setAnilistId(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="anilist-api">AniList API Key</Label>
-                <Input id="anilist-api" type="password" defaultValue="•••••••••••••••••" />
+                <Label htmlFor="anilist-secret">AniList Client Secret</Label>
+                <Input 
+                  id="anilist-secret" 
+                  type="password" 
+                  value={anilistSecret}
+                  onChange={(e) => setAnilistSecret(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="mal-api">MyAnimeList API Key</Label>
+                <Input id="mal-api" type="password" defaultValue="•••••••••••••••••" />
               </div>
               <div className="flex items-center space-x-2">
                 <Switch id="auto-sync" defaultChecked />
@@ -121,7 +149,7 @@ const AdminSettings = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button>Save Changes</Button>
+              <Button onClick={handleSaveApiChanges}>Save Changes</Button>
             </CardFooter>
           </Card>
         </TabsContent>
