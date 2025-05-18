@@ -9,7 +9,126 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      anime: {
+        Row: {
+          anilist_id: number | null
+          banner_image: string | null
+          cover_image: string | null
+          created_at: string | null
+          description: string | null
+          episodes: number | null
+          genres: string[] | null
+          id: string
+          mean_score: number | null
+          season: string | null
+          season_year: number | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          anilist_id?: number | null
+          banner_image?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          episodes?: number | null
+          genres?: string[] | null
+          id?: string
+          mean_score?: number | null
+          season?: string | null
+          season_year?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          anilist_id?: number | null
+          banner_image?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          episodes?: number | null
+          genres?: string[] | null
+          id?: string
+          mean_score?: number | null
+          season?: string | null
+          season_year?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      anime_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      anime_category_mapping: {
+        Row: {
+          anime_id: string
+          category_id: string
+          created_at: string | null
+          id: string
+          position: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          anime_id: string
+          category_id: string
+          created_at?: string | null
+          id?: string
+          position?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          anime_id?: string
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          position?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anime_category_mapping_anime_id_fkey"
+            columns: ["anime_id"]
+            isOneToOne: false
+            referencedRelation: "anime"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anime_category_mapping_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "anime_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

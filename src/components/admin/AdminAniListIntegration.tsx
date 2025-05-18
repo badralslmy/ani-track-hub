@@ -1,13 +1,21 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Plus, Loader2 } from "lucide-react";
+import { Search, Plus, Loader2, Check, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fetchAnimeById, searchAnime, AniListMedia } from "@/services/aniListApi";
 import { toast } from "@/components/ui/use-toast";
+import { 
+  addAnimeFromAniList, 
+  addAnimeToCategory, 
+  fetchAnimeCategories, 
+  AnimeCategory 
+} from "@/services/supabaseService";
 
 const AdminAniListIntegration = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,6 +23,14 @@ const AdminAniListIntegration = () => {
   const [searchResults, setSearchResults] = useState<AniListMedia[]>([]);
   const [selectedAnime, setSelectedAnime] = useState<AniListMedia | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [addingToDb, setAddingToDb] = useState<Record<number, boolean>>({});
+
+  // جلب فئات الأنمي من قاعدة البيانات
+  const { data: categories, isLoading: loadingCategories } = useQuery({
+    queryKey: ['animeCategories'],
+    queryFn: fetchAnimeCategories
+  });
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +42,8 @@ const AdminAniListIntegration = () => {
       setSearchResults(results);
     } catch (error) {
       toast({
-        title: "Search failed",
-        description: "Failed to search for anime. Please try again.",
+        title: "فشل البحث",
+        description: "تعذر البحث عن الأنمي. يرجى المحاولة مرة أخرى.",
         variant: "destructive",
       });
     } finally {
@@ -45,8 +61,8 @@ const AdminAniListIntegration = () => {
       setSelectedAnime(anime);
     } catch (error) {
       toast({
-        title: "Fetch failed",
-        description: "Failed to fetch anime by ID. Please try again.",
+        title: "فشل الجلب",
+        description: "تعذر جلب الأنمي بواسطة المعرف. يرجى المحاولة مرة أخرى.",
         variant: "destructive",
       });
     } finally {
@@ -54,46 +70,137 @@ const AdminAniListIntegration = () => {
     }
   };
 
-  const handleAddToLibrary = (anime: AniListMedia) => {
-    // In a real app, you would save this to your database
-    toast({
-      title: "Anime added",
-      description: `${anime.title.english || anime.title.romaji} has been added to your library.`,
-    });
+  const handleAddToLibrary = async (anime: AniListMedia) => {
+    if (!selectedCategory) {
+      toast({
+        title: "تنبيه",
+        description: "يرجى اختيار فئة لإضافة الأنمي إليها",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingToDb({...addingToDb, [anime.id]: true});
     
-    // Set as selected to show details
-    setSelectedAnime(anime);
+    try {
+      // إضافة الأنمي إلى قاعدة البيانات
+      const addedAnime = await addAnimeFromAniList(anime);
+      
+      // إضافة الأنمي إلى الفئة المحددة
+      await addAnimeToCategory(addedAnime.id, selectedCategory);
+      
+      toast({
+        title: "تمت الإضافة بنجاح",
+        description: `تمت إضافة ${anime.title.english || anime.title.romaji} إلى المكتبة.`,
+      });
+      
+      // عرض التفاصيل
+      setSelectedAnime(anime);
+    } catch (error) {
+      console.error("خطأ عند إضافة الأنمي:", error);
+      toast({
+        title: "خطأ في الإضافة",
+        description: "تعذرت إضافة الأنمي إلى المكتبة. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToDb({...addingToDb, [anime.id]: false});
+    }
   };
 
-  const handleAddToBanner = (anime: AniListMedia) => {
-    // In a real app, you would save this to your database
-    toast({
-      title: "Added to banner",
-      description: `${anime.title.english || anime.title.romaji} has been added to the banner.`,
-    });
+  const handleAddToBanner = async (anime: AniListMedia) => {
+    setAddingToDb({...addingToDb, [anime.id]: true});
+
+    try {
+      // البحث عن فئة البانر
+      const bannerCategory = categories?.find(cat => cat.name === 'hero_banner');
+      
+      if (!bannerCategory) {
+        throw new Error("فئة البانر غير موجودة");
+      }
+      
+      // إضافة الأنمي إلى قاعدة البيانات
+      const addedAnime = await addAnimeFromAniList(anime);
+      
+      // إضافة الأنمي إلى فئة البانر
+      await addAnimeToCategory(addedAnime.id, bannerCategory.id);
+      
+      toast({
+        title: "تمت الإضافة إلى البانر",
+        description: `تمت إضافة ${anime.title.english || anime.title.romaji} إلى البانر الرئيسي.`,
+      });
+    } catch (error) {
+      console.error("خطأ عند الإضافة للبانر:", error);
+      toast({
+        title: "خطأ في الإضافة",
+        description: "تعذرت إضافة الأنمي إلى البانر. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToDb({...addingToDb, [anime.id]: false});
+    }
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">AniList Integration</h2>
+        <h2 className="text-2xl font-bold">تكامل AniList</h2>
         <p className="text-muted-foreground">
-          Search and import anime from AniList API.
+          ابحث واستورد أنمي من واجهة برمجة تطبيقات AniList.
         </p>
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>اختر الفئة</CardTitle>
+          <CardDescription>
+            حدد الفئة التي تريد إضافة الأنمي إليها
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="category">الفئة</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="اختر فئة" />
+              </SelectTrigger>
+              <SelectContent>
+                {loadingCategories ? (
+                  <div className="p-2 flex items-center justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : (
+                  categories?.map(category => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.display_name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {!selectedCategory && (
+            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 rounded-md flex gap-2 items-center">
+              <AlertTriangle className="h-5 w-5" />
+              <span>يرجى اختيار فئة قبل إضافة أي أنمي</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="search" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="search">Search Anime</TabsTrigger>
-          <TabsTrigger value="id">Fetch by ID</TabsTrigger>
+          <TabsTrigger value="search">البحث عن أنمي</TabsTrigger>
+          <TabsTrigger value="id">جلب بواسطة المعرف</TabsTrigger>
         </TabsList>
 
         <TabsContent value="search">
           <Card>
             <CardHeader>
-              <CardTitle>Search Anime</CardTitle>
+              <CardTitle>البحث عن أنمي</CardTitle>
               <CardDescription>
-                Search for anime on AniList by title
+                ابحث عن أنمي على AniList بواسطة العنوان
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -102,17 +209,18 @@ const AdminAniListIntegration = () => {
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search anime..."
+                    placeholder="ابحث عن أنمي..."
                     className="pl-8"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    dir="auto"
                   />
                 </div>
                 <Button type="submit" disabled={loading}>
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    "Search"
+                    "بحث"
                   )}
                 </Button>
               </form>
@@ -133,7 +241,7 @@ const AdminAniListIntegration = () => {
                           {anime.title.english || anime.title.romaji}
                         </h3>
                         <div className="flex items-center text-xs text-muted-foreground gap-1 mt-1">
-                          <span>{anime.episodes || '?'} episodes</span>
+                          <span>{anime.episodes || '?'} حلقة</span>
                           <span>•</span>
                           <span>{anime.season} {anime.seasonYear}</span>
                         </div>
@@ -143,16 +251,25 @@ const AdminAniListIntegration = () => {
                           size="sm" 
                           className="flex-1"
                           onClick={() => handleAddToLibrary(anime)}
+                          disabled={addingToDb[anime.id]}
                         >
-                          <Plus className="h-4 w-4 mr-1" /> Add to Library
+                          {addingToDb[anime.id] ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                          ) : (
+                            <Plus className="h-4 w-4 mr-1" />
+                          )}
+                          إضافة للمكتبة
                         </Button>
                         <Button 
                           size="sm" 
                           variant="outline" 
                           className="flex-1"
                           onClick={() => handleAddToBanner(anime)}
+                          disabled={addingToDb[anime.id]}
                         >
-                          Add to Banner
+                          {addingToDb[anime.id] ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                          ) : "إضافة للبانر"}
                         </Button>
                       </CardFooter>
                     </Card>
@@ -166,16 +283,16 @@ const AdminAniListIntegration = () => {
         <TabsContent value="id">
           <Card>
             <CardHeader>
-              <CardTitle>Fetch by ID</CardTitle>
+              <CardTitle>جلب بواسطة المعرف</CardTitle>
               <CardDescription>
-                Get anime by AniList ID
+                احصل على أنمي بواسطة معرف AniList
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleFetchById} className="flex gap-2">
                 <Input
                   type="number"
-                  placeholder="AniList ID (e.g. 21)"
+                  placeholder="معرف AniList (مثال: 21)"
                   value={animeId}
                   onChange={(e) => setAnimeId(e.target.value)}
                   className="flex-1"
@@ -184,7 +301,7 @@ const AdminAniListIntegration = () => {
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    "Fetch"
+                    "جلب"
                   )}
                 </Button>
               </form>
@@ -196,7 +313,7 @@ const AdminAniListIntegration = () => {
       {selectedAnime && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Selected Anime</CardTitle>
+            <CardTitle>الأنمي المُحدد</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="md:flex gap-6">
@@ -224,25 +341,25 @@ const AdminAniListIntegration = () => {
                 <div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <span className="text-muted-foreground">Status:</span>{" "}
+                      <span className="text-muted-foreground">الحالة:</span>{" "}
                       <span>{selectedAnime.status}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Episodes:</span>{" "}
+                      <span className="text-muted-foreground">عدد الحلقات:</span>{" "}
                       <span>{selectedAnime.episodes || "?"}</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Score:</span>{" "}
+                      <span className="text-muted-foreground">التقييم:</span>{" "}
                       <span>{selectedAnime.meanScore / 10}/10</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Popularity:</span>{" "}
+                      <span className="text-muted-foreground">الشعبية:</span>{" "}
                       <span>{selectedAnime.popularity}</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium mb-1">Description</h3>
+                  <h3 className="text-sm font-medium mb-1">الوصف</h3>
                   <p 
                     className="text-sm text-muted-foreground"
                     dangerouslySetInnerHTML={{ __html: selectedAnime.description }}
@@ -252,11 +369,24 @@ const AdminAniListIntegration = () => {
             </div>
           </CardContent>
           <CardFooter className="flex gap-2">
-            <Button onClick={() => handleAddToBanner(selectedAnime)}>
-              Add to Banner
+            <Button 
+              onClick={() => handleAddToBanner(selectedAnime)}
+              disabled={addingToDb[selectedAnime.id]}
+            >
+              {addingToDb[selectedAnime.id] ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : "إضافة للبانر"}
+            </Button>
+            <Button 
+              onClick={() => handleAddToLibrary(selectedAnime)}
+              disabled={addingToDb[selectedAnime.id]}
+            >
+              {addingToDb[selectedAnime.id] ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : "إضافة للمكتبة"}
             </Button>
             <Button variant="outline" onClick={() => setSelectedAnime(null)}>
-              Clear
+              إلغاء
             </Button>
           </CardFooter>
         </Card>
