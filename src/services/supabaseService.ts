@@ -49,6 +49,23 @@ export async function fetchAnimeCategories(): Promise<AnimeCategory[]> {
 
 // دالة لجلب الأنمي حسب الفئة
 export async function fetchAnimeByCategory(categoryName: string): Promise<AnimeRecord[]> {
+  // جلب معرف الفئة أولاً
+  const { data: categoryData, error: categoryError } = await supabase
+    .from('anime_categories')
+    .select('id')
+    .eq('name', categoryName)
+    .single();
+
+  if (categoryError) {
+    console.error(`Error fetching category ${categoryName}:`, categoryError);
+    throw categoryError;
+  }
+
+  if (!categoryData) {
+    return [];
+  }
+
+  // استخدام معرف الفئة لجلب الأنمي المرتبط بها
   const { data, error } = await supabase
     .from('anime_category_mapping')
     .select(`
@@ -56,7 +73,7 @@ export async function fetchAnimeByCategory(categoryName: string): Promise<AnimeR
       position,
       anime:anime_id (*)
     `)
-    .eq('category:category_id.name', categoryName)
+    .eq('category_id', categoryData.id)
     .order('position');
 
   if (error) {

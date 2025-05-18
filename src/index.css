@@ -87,11 +87,15 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border font-tajawal;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
   }
 }
 
@@ -114,6 +118,6 @@
   
   .section-title::before {
     content: '';
-    @apply block w-1 h-6 bg-anitrack-purple rounded-sm mr-2;
+    @apply block w-1 h-6 bg-anitrack-purple rounded-sm ml-2;
   }
 }
