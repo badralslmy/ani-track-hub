@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Star, Plus, Share2, Play, Loader2 } from "lucide-react";
+import { Star, Plus, Share2, Play, Loader2, Calendar, Clock, Film, Heart } from "lucide-react";
 import { 
   Card, 
   CardContent, 
@@ -14,7 +14,9 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import AnimeCard from "@/components/anime/AnimeCard";
+import CountdownTimer from "@/components/anime/CountdownTimer";
 import { toast } from "sonner";
 import { recommendedAnime } from "@/data/mock";
 
@@ -35,7 +37,10 @@ interface AnimeDetail {
   seasonYear: number | null;
   averageScore: number | null;
   popularity: number | null;
-  nextAiringEpisode: any | null;
+  nextAiringEpisode: {
+    episode: number;
+    airingAt: number;
+  } | null;
   characters: Array<{
     id: string;
     name: string;
@@ -73,6 +78,10 @@ const fetchAnimeDetails = async (id: string): Promise<AnimeDetail | null> => {
     if (!foundAnime) {
       throw new Error("لم يتم العثور على الأنمي");
     }
+
+    // حساب وقت البث القادم للعد التنازلي - عشوائي للعرض التجريبي
+    const nextAiringDate = new Date();
+    nextAiringDate.setDate(nextAiringDate.getDate() + Math.floor(Math.random() * 7) + 1); // بين 1-7 أيام
     
     // بناء كائن الأنمي بناءً على البيانات المتوفرة
     return {
@@ -91,7 +100,10 @@ const fetchAnimeDetails = async (id: string): Promise<AnimeDetail | null> => {
       seasonYear: 2023,
       averageScore: foundAnime.rating ? foundAnime.rating * 10 : 80,
       popularity: 10000,
-      nextAiringEpisode: null,
+      nextAiringEpisode: {
+        episode: foundAnime.id.charCodeAt(0) % 24 + 1, // عشوائي للعرض التجريبي
+        airingAt: nextAiringDate.getTime() / 1000
+      },
       characters: [
         {
           id: "1",
@@ -113,16 +125,35 @@ const fetchAnimeDetails = async (id: string): Promise<AnimeDetail | null> => {
             image: "https://s4.anilist.co/file/anilistcdn/staff/large/n100142-lJt9Gp3rN00N.png"
           }
         },
+        {
+          id: "3",
+          name: "شخصية 3",
+          image: "https://s4.anilist.co/file/anilistcdn/character/large/b40882-F3gr1PJP3Eo0.png",
+          role: "ثانوي",
+          voiceActor: {
+            name: "ممثل صوتي 3",
+            image: "https://s4.anilist.co/file/anilistcdn/staff/large/n95672-2RfLzncNyvbR.jpg"
+          }
+        },
       ],
       seasons: [
         {
           id: "s1",
           title: "الموسم 1",
-          episodes: [
-            { number: 1, title: "الحلقة 1", duration: 24 },
-            { number: 2, title: "الحلقة 2", duration: 24 },
-            { number: 3, title: "الحلقة 3", duration: 24 },
-          ]
+          episodes: Array.from({ length: 12 }, (_, i) => ({
+            number: i + 1,
+            title: `الحلقة ${i + 1}`,
+            duration: 24
+          }))
+        },
+        {
+          id: "s2",
+          title: "الموسم 2",
+          episodes: Array.from({ length: 12 }, (_, i) => ({
+            number: i + 1,
+            title: `الحلقة ${i + 1}`,
+            duration: 24
+          }))
         }
       ],
       writer: "كاتب الأنمي"
@@ -137,6 +168,7 @@ const AnimeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [selectedTab, setSelectedTab] = useState("episodes");
   const [selectedSeason, setSelectedSeason] = useState("");
+  const [watchProgress, setWatchProgress] = useState(35);
   
   // استخدام React Query لجلب بيانات الأنمي
   const { data: anime, isLoading, error } = useQuery({
@@ -154,6 +186,11 @@ const AnimeDetail = () => {
   
   // إيجاد الموسم المختار
   const currentSeason = anime?.seasons.find(season => season.id === selectedSeason) || anime?.seasons[0];
+
+  // دالة تحويل timestamp إلى تاريخ
+  const getNextEpisodeDate = (timestamp: number) => {
+    return new Date(timestamp * 1000);
+  };
 
   // إظهار رسالة التحميل
   if (isLoading) {
@@ -193,6 +230,13 @@ const AnimeDetail = () => {
     });
   };
 
+  // دالة تقييم الأنمي
+  const handleRateAnime = () => {
+    toast.success("تم حفظ تقييمك", {
+      description: `شكراً لك على تقييم ${anime.title}`
+    });
+  };
+
   return (
     <AppLayout>
       {/* قسم الغلاف */}
@@ -228,12 +272,35 @@ const AnimeDetail = () => {
               </Button>
               
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handleRateAnime}>
                   <Star className="w-4 h-4 ml-2" /> تقييم
                 </Button>
                 <Button variant="outline" className="w-full">
                   <Share2 className="w-4 h-4 ml-2" /> مشاركة
                 </Button>
+              </div>
+            </div>
+
+            {/* معلومات إضافية */}
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="w-4 h-4" />
+                <span>{anime.season || "غير محدد"} {anime.seasonYear || ""}</span>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Film className="w-4 h-4" />
+                <span>{anime.episodes || "غير محدد"} حلقة</span>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="w-4 h-4" />
+                <span>{anime.duration || "غير محدد"} دقيقة</span>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Heart className="w-4 h-4" />
+                <span>{anime.status || "غير محدد"}</span>
               </div>
             </div>
             
@@ -243,25 +310,6 @@ const AnimeDetail = () => {
                 <p>{anime.studios?.join(", ") || "غير محدد"}</p>
               </div>
               
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">الموسم</h4>
-                <p>{anime.season || "غير محدد"} {anime.seasonYear || ""}</p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">عدد الحلقات</h4>
-                <p>{anime.episodes || "غير محدد"} حلقة</p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">المدة</h4>
-                <p>{anime.duration || "غير محدد"} دقيقة</p>
-              </div>
-              
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">الحالة</h4>
-                <p>{anime.status || "غير محدد"}</p>
-              </div>
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground">الكاتب</h4>
                 <p>{anime.writer || "غير محدد"}</p>
@@ -291,10 +339,14 @@ const AnimeDetail = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  {anime.genres?.map((genre) => (
-                    <span key={genre} className="px-2 py-1 text-xs rounded-full bg-secondary text-secondary-foreground">
+                  {anime.genres?.map((genre, index) => (
+                    <Link 
+                      to={`/browse?genre=${genre}`}
+                      key={index} 
+                      className="px-2 py-1 text-xs rounded-full bg-secondary text-secondary-foreground hover:bg-anitrack-purple hover:text-white transition-colors"
+                    >
                       {genre}
-                    </span>
+                    </Link>
                   ))}
                 </div>
                 
@@ -307,6 +359,27 @@ const AnimeDetail = () => {
                   <span className="text-sm text-muted-foreground">{anime.popularity?.toLocaleString() || "0"} متابع</span>
                 </div>
                 
+                {/* إضافة نظام التقدم في المشاهدة */}
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm">تقدم المشاهدة</span>
+                    <span className="text-sm font-medium">{watchProgress}%</span>
+                  </div>
+                  <Slider
+                    defaultValue={[watchProgress]}
+                    max={100}
+                    step={1}
+                    onValueChange={(values) => setWatchProgress(values[0])}
+                    className="mb-2"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>الحلقة {Math.ceil((watchProgress / 100) * (anime.episodes || 12))}/{anime.episodes || 12}</span>
+                    <Link to="#" className="text-anitrack-purple hover:text-anitrack-purple-dark">
+                      متابعة المشاهدة
+                    </Link>
+                  </div>
+                </div>
+                
                 <div className="md:hidden mt-4 space-y-3">
                   <Button 
                     className="w-full bg-anitrack-purple hover:bg-anitrack-purple-dark gap-2"
@@ -316,7 +389,7 @@ const AnimeDetail = () => {
                   </Button>
                   
                   <div className="grid grid-cols-2 gap-3">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={handleRateAnime}>
                       <Star className="w-4 h-4 ml-2" /> تقييم
                     </Button>
                     <Button variant="outline" className="w-full">
@@ -326,6 +399,21 @@ const AnimeDetail = () => {
                 </div>
                 
                 <p className="text-muted-foreground">{anime.description || "لا يوجد وصف متاح"}</p>
+
+                {/* إضافة العد التنازلي للحلقة القادمة إذا كانت متاحة */}
+                {anime.nextAiringEpisode && (
+                  <div className="bg-anitrack-purple/10 p-4 rounded-lg space-y-3">
+                    <div className="text-anitrack-purple font-medium">
+                      الحلقة {anime.nextAiringEpisode.episode} قادمة في:
+                    </div>
+                    <CountdownTimer 
+                      targetDate={getNextEpisodeDate(anime.nextAiringEpisode.airingAt)}
+                      onComplete={() => toast.success("الحلقة متاحة الآن!", {
+                        description: `يمكنك الآن مشاهدة الحلقة ${anime.nextAiringEpisode?.episode}`
+                      })}
+                    />
+                  </div>
+                )}
               </div>
             </div>
             
@@ -369,6 +457,7 @@ const AnimeDetail = () => {
                               <div key={episode.number} className="flex items-center p-4 hover:bg-muted/50">
                                 <div className="w-10 text-center font-medium">{episode.number}</div>
                                 <div className="flex-1 mr-2">{episode.title}</div>
+                                <div className="hidden sm:block text-sm text-muted-foreground ml-4">{episode.duration} دقيقة</div>
                                 <Button variant="ghost" size="icon" className="mr-auto">
                                   <Play className="h-4 w-4" />
                                 </Button>
@@ -440,7 +529,7 @@ const AnimeDetail = () => {
         
         {/* التوصيات */}
         <div className="my-10">
-          <h2 className="section-title">قد يعجبك أيضاً</h2>
+          <h2 className="text-2xl font-bold mb-4">قد يعجبك أيضاً</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {recommendedAnime.slice(0, 10).map((animeItem) => (
               <AnimeCard

@@ -6,36 +6,36 @@ const AdminStats = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Analytics & Statistics</h2>
+        <h2 className="text-2xl font-bold">الإحصائيات والتحليلات</h2>
         <p className="text-muted-foreground">
-          View detailed statistics about your platform usage and engagement.
+          عرض إحصائيات مفصلة حول استخدام المنصة والتفاعل.
         </p>
       </div>
       
       <Tabs defaultValue="user" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="user">User Stats</TabsTrigger>
-          <TabsTrigger value="content">Content Stats</TabsTrigger>
-          <TabsTrigger value="engagement">Engagement</TabsTrigger>
+          <TabsTrigger value="user">إحصائيات المستخدمين</TabsTrigger>
+          <TabsTrigger value="content">إحصائيات المحتوى</TabsTrigger>
+          <TabsTrigger value="engagement">التفاعل</TabsTrigger>
         </TabsList>
         
         <TabsContent value="user" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>User Growth</CardTitle>
+                <CardTitle>نمو المستخدمين</CardTitle>
               </CardHeader>
               <CardContent className="h-80 flex items-center justify-center text-muted-foreground">
-                User Growth Chart Placeholder
+                رسم بياني لنمو المستخدمين
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>User Demographics</CardTitle>
+                <CardTitle>ديموغرافيا المستخدمين</CardTitle>
               </CardHeader>
               <CardContent className="h-80 flex items-center justify-center text-muted-foreground">
-                Demographics Chart Placeholder
+                رسم بياني للبيانات الديموغرافية
               </CardContent>
             </Card>
           </div>
@@ -45,19 +45,19 @@ const AdminStats = () => {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Popular Genres</CardTitle>
+                <CardTitle>الأنواع الشائعة</CardTitle>
               </CardHeader>
               <CardContent className="h-80 flex items-center justify-center text-muted-foreground">
-                Genres Chart Placeholder
+                رسم بياني للأنواع
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Rating Distribution</CardTitle>
+                <CardTitle>توزيع التقييمات</CardTitle>
               </CardHeader>
               <CardContent className="h-80 flex items-center justify-center text-muted-foreground">
-                Rating Chart Placeholder
+                رسم بياني للتقييمات
               </CardContent>
             </Card>
           </div>
@@ -67,19 +67,19 @@ const AdminStats = () => {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Daily Active Users</CardTitle>
+                <CardTitle>المستخدمين النشطين يوميًا</CardTitle>
               </CardHeader>
               <CardContent className="h-80 flex items-center justify-center text-muted-foreground">
-                DAU Chart Placeholder
+                رسم بياني للمستخدمين النشطين يوميًا
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Activity Heatmap</CardTitle>
+                <CardTitle>خريطة حرارة النشاط</CardTitle>
               </CardHeader>
               <CardContent className="h-80 flex items-center justify-center text-muted-foreground">
-                Heatmap Placeholder
+                خريطة الحرارة
               </CardContent>
             </Card>
           </div>

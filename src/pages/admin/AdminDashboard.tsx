@@ -1,17 +1,9 @@
 
-import { useState } from "react";
-import { 
-  LayoutDashboard, 
-  Settings, 
-  Database, 
-  FilePlus, 
-  Users, 
-  BarChart,
-  ExternalLink
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminAnimeList from "@/components/admin/AdminAnimeList";
 import AdminAddAnime from "@/components/admin/AdminAddAnime";
@@ -22,88 +14,67 @@ import AdminFileStorage from "@/components/admin/AdminFileStorage";
 import AdminAniListIntegration from "@/components/admin/AdminAniListIntegration";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const tabParam = searchParams.get("tab");
+  
+  // تحديد التبويب النشط من الرابط أو استخدام القيمة الافتراضية
+  const [activeTab, setActiveTab] = useState(tabParam || "overview");
+
+  // تحديث عنوان URL عند تغيير التبويب
+  useEffect(() => {
+    if (tabParam !== activeTab) {
+      searchParams.set("tab", activeTab);
+      navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+    }
+  }, [activeTab, location.pathname, navigate, searchParams, tabParam]);
+
+  // تحديث التبويب النشط عند تغيير الرابط
+  useEffect(() => {
+    if (tabParam && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  // عرض المحتوى المناسب حسب التبويب النشط
+  const renderContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return <AdminOverview />;
+      case "anime-list":
+        return <AdminAnimeList />;
+      case "add-anime":
+        return <AdminAddAnime />;
+      case "anilist":
+        return <AdminAniListIntegration />;
+      case "users":
+        return <AdminUsers />;
+      case "statistics":
+        return <AdminStats />;
+      case "settings":
+        return <AdminSettings />;
+      case "files":
+        return <AdminFileStorage />;
+      default:
+        return <AdminOverview />;
+    }
+  };
 
   return (
-    <AppLayout>
-      <div className="container py-6">
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-1">Admin Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage your anime database, users, and application settings.
-            </p>
-          </div>
-          
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-2 md:grid-cols-8 gap-2">
-              <TabsTrigger value="overview" className="flex items-center gap-2">
-                <LayoutDashboard className="w-4 h-4" />
-                <span className="hidden sm:inline">Overview</span>
-              </TabsTrigger>
-              <TabsTrigger value="anime-list" className="flex items-center gap-2">
-                <Database className="w-4 h-4" />
-                <span className="hidden sm:inline">Anime List</span>
-              </TabsTrigger>
-              <TabsTrigger value="add-anime" className="flex items-center gap-2">
-                <FilePlus className="w-4 h-4" />
-                <span className="hidden sm:inline">Add Anime</span>
-              </TabsTrigger>
-              <TabsTrigger value="anilist" className="flex items-center gap-2">
-                <ExternalLink className="w-4 h-4" />
-                <span className="hidden sm:inline">AniList API</span>
-              </TabsTrigger>
-              <TabsTrigger value="users" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Users</span>
-              </TabsTrigger>
-              <TabsTrigger value="statistics" className="flex items-center gap-2">
-                <BarChart className="w-4 h-4" />
-                <span className="hidden sm:inline">Statistics</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </TabsTrigger>
-              <TabsTrigger value="files" className="flex items-center gap-2">
-                <span>الملفات</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="overview" className="mt-6">
-              <AdminOverview />
-            </TabsContent>
-            
-            <TabsContent value="anime-list" className="mt-6">
-              <AdminAnimeList />
-            </TabsContent>
-            
-            <TabsContent value="add-anime" className="mt-6">
-              <AdminAddAnime />
-            </TabsContent>
-            
-            <TabsContent value="anilist" className="mt-6">
-              <AdminAniListIntegration />
-            </TabsContent>
-            
-            <TabsContent value="users" className="mt-6">
-              <AdminUsers />
-            </TabsContent>
-            
-            <TabsContent value="statistics" className="mt-6">
-              <AdminStats />
-            </TabsContent>
-            
-            <TabsContent value="settings" className="mt-6">
-              <AdminSettings />
-            </TabsContent>
-            
-            <TabsContent value="files" className="mt-6">
-              <AdminFileStorage />
-            </TabsContent>
-          </Tabs>
+    <AppLayout noContainer>
+      <SidebarProvider defaultOpen={true}>
+        <div className="flex min-h-screen w-full">
+          <AdminSidebar />
+          <SidebarInset>
+            <div className="container py-6">
+              <div className="flex flex-col gap-6">
+                {renderContent()}
+              </div>
+            </div>
+          </SidebarInset>
         </div>
-      </div>
+      </SidebarProvider>
     </AppLayout>
   );
 };

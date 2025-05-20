@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Play, Star, Loader2 } from "lucide-react";
 import { fetchAnimeByCategory } from "@/services/supabaseService";
 import { heroItems } from "@/data/mock"; // استخدام البيانات الوهمية كاحتياطي
+import CountdownTimer from "@/components/anime/CountdownTimer";
 
 export interface BannerItem {
   id: string;
@@ -12,6 +13,7 @@ export interface BannerItem {
   description: string | null;
   backgroundImage: string | null;
   type: "countdown" | "recommendation" | "rating" | "seasonal" | "trending";
+  nextEpisodeDate?: Date | null;
 }
 
 export default function HeroBanner() {
@@ -32,17 +34,33 @@ export default function HeroBanner() {
   });
 
   // تحويل بيانات الأنمي إلى تنسيق البانر
-  const bannerItems: BannerItem[] = bannerAnime?.map((anime, index) => ({
-    id: anime.id,
-    title: anime.title,
-    description: anime.description,
-    backgroundImage: anime.banner_image || anime.cover_image,
-    // تحديد نوع العرض بناءً على الموقع في القائمة
-    type: (["trending", "recommendation", "countdown", "seasonal", "rating"] as const)[index % 5]
-  })) || [];
+  const bannerItems: BannerItem[] = bannerAnime?.map((anime, index) => {
+    // إنشاء تاريخ للحلقة القادمة (مثال: 3 أيام من الآن للعرض)
+    const nextEpisodeDate = new Date();
+    nextEpisodeDate.setDate(nextEpisodeDate.getDate() + ((index % 7) + 1)); // بين 1-7 أيام
+    
+    return {
+      id: anime.id,
+      title: anime.title,
+      description: anime.description,
+      backgroundImage: anime.banner_image || anime.cover_image,
+      // تحديد نوع العرض بناءً على الموقع في القائمة
+      type: (["trending", "recommendation", "countdown", "seasonal", "rating"] as const)[index % 5],
+      nextEpisodeDate: nextEpisodeDate
+    };
+  }) || [];
   
   // استخدام البيانات الوهمية إذا لم تكن هناك بيانات في قاعدة البيانات
-  const displayItems = bannerItems.length > 0 ? bannerItems : heroItems;
+  const displayItems = bannerItems.length > 0 ? bannerItems : heroItems.map((item, index) => {
+    // إضافة تاريخ الحلقة القادمة للبيانات الوهمية أيضاً
+    const nextEpisodeDate = new Date();
+    nextEpisodeDate.setDate(nextEpisodeDate.getDate() + ((index % 7) + 1)); // بين 1-7 أيام
+    
+    return {
+      ...item,
+      nextEpisodeDate
+    };
+  });
 
   useEffect(() => {
     // تغيير البانر كل 8 ثوان
@@ -120,24 +138,9 @@ export default function HeroBanner() {
             <Button variant="secondary">إضافة إلى قائمتي</Button>
           </div>
 
-          {activeItem.type === "countdown" && (
-            <div className="mt-8 flex gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">01</div>
-                <div className="text-xs text-white/80">أيام</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">12</div>
-                <div className="text-xs text-white/80">ساعات</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">35</div>
-                <div className="text-xs text-white/80">دقائق</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">42</div>
-                <div className="text-xs text-white/80">ثواني</div>
-              </div>
+          {activeItem.type === "countdown" && activeItem.nextEpisodeDate && (
+            <div className="mt-8">
+              <CountdownTimer targetDate={activeItem.nextEpisodeDate} />
             </div>
           )}
         </div>

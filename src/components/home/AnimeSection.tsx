@@ -10,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious
 } from "@/components/ui/carousel";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchAnimeByCategory, AnimeRecord } from "@/services/supabaseService";
 
 interface AnimeSectionProps {
@@ -75,24 +76,28 @@ export default function AnimeSection({
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <Carousel className="w-full">
-          <CarouselContent>
-            {animeToDisplay.map((anime) => (
-              <CarouselItem key={anime.id} className="md:basis-1/5 lg:basis-1/5">
-                <AnimeCard
-                  id={anime.id}
-                  title={anime.title}
-                  image={anime.image}
-                  rating={anime.rating}
-                  episodesWatched={anime.episodesWatched}
-                  totalEpisodes={anime.totalEpisodes}
-                />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <ScrollArea className="w-full">
+          <div className="pb-4">
+            <Carousel className="w-full">
+              <CarouselContent>
+                {animeToDisplay.map((anime) => (
+                  <CarouselItem key={anime.id} className="md:basis-1/5 lg:basis-1/5">
+                    <AnimeCard
+                      id={anime.id}
+                      title={anime.title}
+                      image={anime.image}
+                      rating={anime.rating}
+                      episodesWatched={anime.episodesWatched}
+                      totalEpisodes={anime.totalEpisodes}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
+            </Carousel>
+          </div>
+        </ScrollArea>
       )}
     </section>
   );
