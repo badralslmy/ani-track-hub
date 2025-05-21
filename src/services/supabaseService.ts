@@ -135,7 +135,7 @@ export async function addAnimeFromAniList(anime: AniListMedia): Promise<AnimeRec
       banner_image: anime.bannerImage,
       episodes: anime.episodes,
       status: anime.status,
-      genres: anime.genres,
+      genres: anime.genres as string[],
       mean_score: anime.meanScore / 10, // تحويل من 100 إلى 10
       season: anime.season,
       season_year: anime.seasonYear,

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Search, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { searchAnime } from "@/services/aniListApi";
 import { useNavigate } from "react-router-dom";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const AdminAddAnime = () => {
   const [searchTerm, setSearchTerm] = useState("");

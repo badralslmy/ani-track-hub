@@ -129,12 +129,91 @@ export type Database = {
           },
         ]
       }
+      episodes: {
+        Row: {
+          anime_id: string
+          created_at: string | null
+          description: string | null
+          episode_number: number
+          id: string
+          release_date: string | null
+          thumbnail: string | null
+          title: string | null
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          anime_id: string
+          created_at?: string | null
+          description?: string | null
+          episode_number: number
+          id?: string
+          release_date?: string | null
+          thumbnail?: string | null
+          title?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          anime_id?: string
+          created_at?: string | null
+          description?: string | null
+          episode_number?: number
+          id?: string
+          release_date?: string | null
+          thumbnail?: string | null
+          title?: string | null
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodes_anime_id_fkey"
+            columns: ["anime_id"]
+            isOneToOne: false
+            referencedRelation: "anime"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_anime_episodes: {
+        Args: { p_anime_id: string }
+        Returns: undefined
+      }
+      delete_episode: {
+        Args: { p_episode_id: string }
+        Returns: undefined
+      }
+      get_anime_episodes: {
+        Args: { p_anime_id: string }
+        Returns: {
+          anime_id: string
+          created_at: string | null
+          description: string | null
+          episode_number: number
+          id: string
+          release_date: string | null
+          thumbnail: string | null
+          title: string | null
+          updated_at: string | null
+          video_url: string | null
+        }[]
+      }
+      upsert_episode: {
+        Args: {
+          p_anime_id: string
+          p_episode_number: number
+          p_title: string
+          p_thumbnail: string
+          p_video_url: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
