@@ -6,15 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Loader2, PlusCircle, Edit, Trash2, ExternalLink } from "lucide-react";
+import { Loader2, PlusCircle, Edit, Trash2, ExternalLink, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllAnime, fetchAnimeEpisodes, addEpisodeLink, Episode, AnimeRecord } from "@/services/supabaseService";
+import { fetchAllAnime, fetchAnimeEpisodes, addEpisodeLink, deleteEpisodeLink, Episode, AnimeRecord } from "@/services/supabaseService";
 import { toast } from "@/components/ui/use-toast";
 
 export default function AdminFileStorage() {
   const [selectedAnimeId, setSelectedAnimeId] = useState<string>("");
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isEditingEpisode, setIsEditingEpisode] = useState(false);
+  const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null);
   const [formData, setFormData] = useState({
     episodeNumber: 1,
     title: "",
@@ -34,13 +37,20 @@ export default function AdminFileStorage() {
     enabled: !!selectedAnimeId
   });
 
-  // تحديث بيانات النموذج عند تغيير رقم الحلقة
+  // تصفية قائمة الأنمي بناء على البحث
+  const filteredAnime = animeList?.filter(anime => 
+    anime.title.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  // تحديث بيانات النموذج عند تغيير رقم الحلقة (فقط للإضافة الجديدة)
   useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      title: `الحلقة ${prev.episodeNumber}`
-    }));
-  }, [formData.episodeNumber]);
+    if (!isEditingEpisode) {
+      setFormData(prev => ({
+        ...prev,
+        title: `الحلقة ${prev.episodeNumber}`
+      }));
+    }
+  }, [formData.episodeNumber, isEditingEpisode]);
 
   // معالجة إرسال النموذج
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,21 +83,78 @@ export default function AdminFileStorage() {
         videoUrl: ""
       });
       
+      if (isEditingEpisode) {
+        setIsEditingEpisode(false);
+        setCurrentEpisode(null);
+      }
+      
       setIsAddingLink(false);
       
       toast({
         title: "تم بنجاح",
-        description: `تمت إضافة رابط الحلقة ${formData.episodeNumber} بنجاح`,
+        description: isEditingEpisode 
+          ? `تم تحديث رابط الحلقة ${formData.episodeNumber} بنجاح`
+          : `تمت إضافة رابط الحلقة ${formData.episodeNumber} بنجاح`,
       });
     } catch (error) {
-      console.error("Error adding episode link:", error);
+      console.error("Error adding/editing episode link:", error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء إضافة رابط الحلقة",
+        description: "حدث خطأ أثناء إضافة/تعديل رابط الحلقة",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // فتح مربع حوار التعديل مع بيانات الحلقة
+  const handleEditEpisode = (episode: Episode) => {
+    setCurrentEpisode(episode);
+    setFormData({
+      episodeNumber: episode.episode_number,
+      title: episode.title || `الحلقة ${episode.episode_number}`,
+      videoUrl: episode.video_url || ""
+    });
+    setIsEditingEpisode(true);
+    setIsAddingLink(true);
+  };
+
+  // حذف رابط الحلقة
+  const handleDeleteEpisode = async (episode: Episode) => {
+    if (!confirm(`هل أنت متأكد من حذف الحلقة ${episode.episode_number}؟`)) return;
+    
+    try {
+      await deleteEpisodeLink(episode.id);
+      await refetchEpisodes();
+      
+      toast({
+        title: "تم الحذف بنجاح",
+        description: `تم حذف الحلقة ${episode.episode_number} بنجاح`,
+      });
+    } catch (error) {
+      console.error("Error deleting episode:", error);
+      toast({
+        title: "خطأ في الحذف",
+        description: "حدث خطأ أثناء محاولة حذف الحلقة",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // إعادة ضبط حالة الإضافة عند إغلاق النافذة
+  const handleDialogChange = (open: boolean) => {
+    setIsAddingLink(open);
+    if (!open) {
+      setIsEditingEpisode(false);
+      setCurrentEpisode(null);
+      if (!isEditingEpisode) {
+        setFormData({
+          episodeNumber: 1,
+          title: "الحلقة 1",
+          videoUrl: ""
+        });
+      }
     }
   };
 
@@ -100,27 +167,45 @@ export default function AdminFileStorage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-6">
-          <Label htmlFor="anime-select">اختر الأنمي</Label>
-          <Select value={selectedAnimeId} onValueChange={setSelectedAnimeId}>
-            <SelectTrigger id="anime-select">
-              <SelectValue placeholder="اختر أنمي" />
-            </SelectTrigger>
-            <SelectContent>
-              {animeList?.map(anime => (
-                <SelectItem key={anime.id} value={anime.id}>
-                  {anime.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end">
+            <div className="flex-1">
+              <Label htmlFor="anime-search">ابحث عن أنمي</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="anime-search"
+                  className="pl-8"
+                  placeholder="ابحث عن أنمي..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <div className="flex-1">
+              <Label htmlFor="anime-select">اختر الأنمي</Label>
+              <Select value={selectedAnimeId} onValueChange={setSelectedAnimeId}>
+                <SelectTrigger id="anime-select">
+                  <SelectValue placeholder="اختر أنمي" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredAnime?.map(anime => (
+                    <SelectItem key={anime.id} value={anime.id}>
+                      {anime.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {selectedAnimeId && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-medium">روابط الحلقات</h3>
-              <Dialog open={isAddingLink} onOpenChange={setIsAddingLink}>
+              <Dialog open={isAddingLink} onOpenChange={handleDialogChange}>
                 <DialogTrigger asChild>
                   <Button className="gap-1">
                     <PlusCircle className="h-4 w-4" /> إضافة رابط حلقة
@@ -128,7 +213,9 @@ export default function AdminFileStorage() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>إضافة رابط حلقة جديدة</DialogTitle>
+                    <DialogTitle>
+                      {isEditingEpisode ? "تعديل رابط حلقة" : "إضافة رابط حلقة جديدة"}
+                    </DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                     <div className="grid gap-2">
@@ -143,6 +230,7 @@ export default function AdminFileStorage() {
                           episodeNumber: parseInt(e.target.value) 
                         }))}
                         required
+                        disabled={isEditingEpisode}
                       />
                     </div>
                     <div className="grid gap-2">
@@ -178,9 +266,7 @@ export default function AdminFileStorage() {
                           <>
                             <Loader2 className="h-4 w-4 animate-spin mr-2" /> جاري الحفظ
                           </>
-                        ) : (
-                          "إضافة الرابط"
-                        )}
+                        ) : isEditingEpisode ? "تحديث الرابط" : "إضافة الرابط"}
                       </Button>
                     </div>
                   </form>
@@ -229,6 +315,7 @@ export default function AdminFileStorage() {
                               size="sm" 
                               variant="ghost"
                               className="h-8 w-8 p-0"
+                              onClick={() => handleEditEpisode(episode)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -236,6 +323,7 @@ export default function AdminFileStorage() {
                               size="sm" 
                               variant="ghost"
                               className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                              onClick={() => handleDeleteEpisode(episode)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

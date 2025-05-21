@@ -105,7 +105,7 @@ export async function fetchAnimeByCategory(categoryName: string): Promise<AnimeR
     // استخراج بيانات الأنمي من النتائج
     const animeList = data
       .filter(item => item.anime) // تجاهل أي عناصر بدون بيانات أنمي
-      .map(item => item.anime as AnimeRecord);
+      .map(item => item.anime as unknown as AnimeRecord);
     
     return animeList;
   } catch (error) {
@@ -165,7 +165,7 @@ export async function addAnimeFromAniList(anime: AniListMedia): Promise<AnimeRec
       await addEpisodesFromAniList(data.id, anime.streamingEpisodes);
     }
 
-    return data;
+    return data as unknown as AnimeRecord;
   } catch (error) {
     console.error('Error in addAnimeFromAniList:', error);
     if (error instanceof Error) {
@@ -192,13 +192,20 @@ async function addEpisodesFromAniList(
     }));
 
     // إضافة الحلقات إلى قاعدة البيانات
-    const { error } = await supabase
-      .from('episodes')
-      .upsert(episodes, { onConflict: 'anime_id, episode_number' });
+    // سنستخدم مجموعة من متغيرات للحفاظ على القيم التي سيتم استخدامها في الجدول
+    for (const episode of episodes) {
+      const { error } = await supabase.rpc('upsert_episode', {
+        p_anime_id: episode.anime_id,
+        p_episode_number: episode.episode_number,
+        p_title: episode.title,
+        p_thumbnail: episode.thumbnail,
+        p_video_url: episode.video_url
+      });
 
-    if (error) {
-      console.error('Error adding episodes:', error);
-      throw error;
+      if (error) {
+        console.error('Error adding episode:', error);
+        throw error;
+      }
     }
   } catch (error) {
     console.error('Error in addEpisodesFromAniList:', error);
@@ -305,28 +312,59 @@ export async function fetchAllAnime(): Promise<AnimeRecord[]> {
       return [];
     }
 
-    return data || [];
+    return data as unknown as AnimeRecord[];
   } catch (error) {
     console.error('Error in fetchAllAnime:', error);
     return [];
   }
 }
 
+// دالة حذف أنمي من قاعدة البيانات
+export async function deleteAnime(animeId: string): Promise<void> {
+  try {
+    // أولاً، نحذف جميع الحلقات المرتبطة بالأنمي
+    await supabase.rpc('delete_anime_episodes', { p_anime_id: animeId });
+
+    // ثانياً، نحذف جميع علاقات الأنمي بالفئات
+    const { error: mappingError } = await supabase
+      .from('anime_category_mapping')
+      .delete()
+      .eq('anime_id', animeId);
+
+    if (mappingError) {
+      console.error('Error deleting anime mappings:', mappingError);
+      throw mappingError;
+    }
+
+    // أخيراً، نحذف الأنمي نفسه
+    const { error } = await supabase
+      .from('anime')
+      .delete()
+      .eq('id', animeId);
+
+    if (error) {
+      console.error('Error deleting anime:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error in deleteAnime:', error);
+    throw error;
+  }
+}
+
 // دالة لجلب حلقات أنمي معين
 export async function fetchAnimeEpisodes(animeId: string): Promise<Episode[]> {
   try {
-    const { data, error } = await supabase
-      .from('episodes')
-      .select('*')
-      .eq('anime_id', animeId)
-      .order('episode_number');
+    const { data, error } = await supabase.rpc('get_anime_episodes', {
+      p_anime_id: animeId
+    });
 
     if (error) {
       console.error(`Error fetching episodes for anime ${animeId}:`, error);
       return [];
     }
 
-    return data || [];
+    return data as Episode[];
   } catch (error) {
     console.error('Error in fetchAnimeEpisodes:', error);
     return [];
@@ -341,48 +379,38 @@ export async function addEpisodeLink(
   title?: string
 ): Promise<void> {
   try {
-    // التحقق من وجود الحلقة وتحديثها، أو إنشاء حلقة جديدة
-    const { data: existingEpisode, error: checkError } = await supabase
-      .from('episodes')
-      .select('id')
-      .eq('anime_id', animeId)
-      .eq('episode_number', episodeNumber)
-      .maybeSingle();
+    // استخدم دالة لإضافة أو تحديث الحلقة
+    const { error } = await supabase.rpc('upsert_episode', {
+      p_anime_id: animeId,
+      p_episode_number: episodeNumber,
+      p_title: title || `الحلقة ${episodeNumber}`,
+      p_thumbnail: null,
+      p_video_url: videoUrl
+    });
 
-    if (checkError) {
-      console.error('Error checking existing episode:', checkError);
-      throw checkError;
-    }
-
-    if (existingEpisode) {
-      // تحديث الحلقة الموجودة
-      const { error: updateError } = await supabase
-        .from('episodes')
-        .update({ video_url: videoUrl })
-        .eq('id', existingEpisode.id);
-
-      if (updateError) {
-        console.error('Error updating episode link:', updateError);
-        throw updateError;
-      }
-    } else {
-      // إنشاء حلقة جديدة
-      const { error: insertError } = await supabase
-        .from('episodes')
-        .insert({
-          anime_id: animeId,
-          episode_number: episodeNumber,
-          title: title || `الحلقة ${episodeNumber}`,
-          video_url: videoUrl
-        });
-
-      if (insertError) {
-        console.error('Error creating new episode:', insertError);
-        throw insertError;
-      }
+    if (error) {
+      console.error('Error adding/updating episode:', error);
+      throw error;
     }
   } catch (error) {
     console.error('Error in addEpisodeLink:', error);
+    throw error;
+  }
+}
+
+// دالة لحذف حلقة
+export async function deleteEpisodeLink(episodeId: string): Promise<void> {
+  try {
+    const { error } = await supabase.rpc('delete_episode', {
+      p_episode_id: episodeId
+    });
+
+    if (error) {
+      console.error('Error deleting episode:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error in deleteEpisodeLink:', error);
     throw error;
   }
 }

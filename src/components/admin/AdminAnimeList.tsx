@@ -12,11 +12,24 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { fetchAllAnime, AnimeRecord } from "@/services/supabaseService";
+import { fetchAllAnime, deleteAnime, AnimeRecord } from "@/services/supabaseService";
 import { toast } from "@/components/ui/use-toast";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 const AdminAnimeList = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [animeToDelete, setAnimeToDelete] = useState<AnimeRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
   
   // استخدام React Query لجلب بيانات الأنمي
   const { data: animes, isLoading, error, refetch } = useQuery({
@@ -39,6 +52,49 @@ const AdminAnimeList = () => {
   const filteredAnimes = animes?.filter(anime => 
     anime.title.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  // فتح مربع حوار تأكيد الحذف
+  const openDeleteDialog = (anime: AnimeRecord) => {
+    setAnimeToDelete(anime);
+    setDeleteDialogOpen(true);
+  };
+
+  // تنفيذ عملية الحذف
+  const handleDeleteAnime = async () => {
+    if (!animeToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteAnime(animeToDelete.id);
+      await refetch();
+      toast({
+        title: "تم الحذف بنجاح",
+        description: `تم حذف الأنمي "${animeToDelete.title}" بنجاح`,
+      });
+      setDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error deleting anime:", error);
+      toast({
+        title: "خطأ في الحذف",
+        description: "تعذر حذف الأنمي. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // توجيه المستخدم إلى صفحة تعديل الأنمي
+  const handleEditAnime = (anime: AnimeRecord) => {
+    // حفظ بيانات الأنمي المحدد في localStorage للاستخدام في صفحة التعديل
+    localStorage.setItem('animeToEdit', JSON.stringify(anime));
+    navigate(`/admin?tab=add-anime&edit=${anime.id}`);
+    
+    toast({
+      title: "تحرير الأنمي",
+      description: `انتقل إلى تحرير "${anime.title}"`,
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -98,11 +154,19 @@ const AdminAnimeList = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => handleEditAnime(anime)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-4 w-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => openDeleteDialog(anime)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </TableCell>
@@ -112,6 +176,40 @@ const AdminAnimeList = () => {
           </Table>
         )}
       </div>
+
+      {/* مربع حوار تأكيد الحذف */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogDescription>
+              هل أنت متأكد أنك تريد حذف الأنمي "{animeToDelete?.title}"؟
+              <br />
+              هذا الإجراء لا يمكن التراجع عنه.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              إلغاء
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAnime}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" /> 
+                  جاري الحذف...
+                </>
+              ) : "تأكيد الحذف"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
