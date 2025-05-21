@@ -51,7 +51,7 @@ const Index = () => {
           title={section.title}
           viewAllLink={section.viewAllLink}
           categoryName={section.categoryName}
-          fallbackAnimeList={section.fallbackAnimeList}
+          fallbackAnimeList={[]}
         />
       ))}
     </AppLayout>

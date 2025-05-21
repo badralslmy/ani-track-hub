@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminOverview from "@/components/admin/AdminOverview";
 import AdminAnimeList from "@/components/admin/AdminAnimeList";

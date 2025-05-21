@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Play, Star, Loader2 } from "lucide-react";
 import { fetchAnimeByCategory } from "@/services/supabaseService";
-import { heroItems } from "@/data/mock"; // استخدام البيانات الوهمية كاحتياطي
 import CountdownTimer from "@/components/anime/CountdownTimer";
 
 export interface BannerItem {
@@ -35,40 +34,31 @@ export default function HeroBanner() {
 
   // تحويل بيانات الأنمي إلى تنسيق البانر
   const bannerItems: BannerItem[] = bannerAnime?.map((anime, index) => {
-    // إنشاء تاريخ للحلقة القادمة (مثال: 3 أيام من الآن للعرض)
-    const nextEpisodeDate = new Date();
-    nextEpisodeDate.setDate(nextEpisodeDate.getDate() + ((index % 7) + 1)); // بين 1-7 أيام
+    // إنشاء تاريخ للحلقة القادمة (استخدام تاريخ الحلقة إذا كان متوفراً أو تاريخ تقريبي)
+    const nextEpisodeDate = anime.next_episode_date 
+      ? new Date(anime.next_episode_date) 
+      : new Date(Date.now() + (((index % 7) + 1) * 24 * 60 * 60 * 1000)); // بين 1-7 أيام
     
     return {
       id: anime.id,
       title: anime.title,
       description: anime.description,
       backgroundImage: anime.banner_image || anime.cover_image,
-      // تحديد نوع العرض بناءً على الموقع في القائمة
+      // تحديد نوع العرض بشكل عشوائي
       type: (["trending", "recommendation", "countdown", "seasonal", "rating"] as const)[index % 5],
       nextEpisodeDate: nextEpisodeDate
     };
   }) || [];
-  
-  // استخدام البيانات الوهمية إذا لم تكن هناك بيانات في قاعدة البيانات
-  const displayItems = bannerItems.length > 0 ? bannerItems : heroItems.map((item, index) => {
-    // إضافة تاريخ الحلقة القادمة للبيانات الوهمية أيضاً
-    const nextEpisodeDate = new Date();
-    nextEpisodeDate.setDate(nextEpisodeDate.getDate() + ((index % 7) + 1)); // بين 1-7 أيام
-    
-    return {
-      ...item,
-      nextEpisodeDate
-    };
-  });
 
   useEffect(() => {
-    // تغيير البانر كل 8 ثوان
-    const interval = setInterval(() => {
-      setActiveIndex((prevIndex) => (prevIndex + 1) % displayItems.length);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [displayItems.length]);
+    // تغيير البانر كل 8 ثوان إذا كان هناك أكثر من عنصر
+    if (bannerItems.length > 1) {
+      const interval = setInterval(() => {
+        setActiveIndex((prevIndex) => (prevIndex + 1) % bannerItems.length);
+      }, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [bannerItems.length]);
 
   // عدم عرض البانر أثناء التحميل
   if (isLoading) {
@@ -79,7 +69,16 @@ export default function HeroBanner() {
     );
   }
 
-  const activeItem = displayItems[activeIndex];
+  // إذا لم تكن هناك أي بيانات للعرض أو حدث خطأ
+  if (bannerItems.length === 0 || error) {
+    return (
+      <div className="h-[300px] flex justify-center items-center bg-slate-100 dark:bg-slate-900">
+        <p className="text-muted-foreground">لا توجد أعمال متاحة للعرض في البانر</p>
+      </div>
+    );
+  }
+
+  const activeItem = bannerItems[activeIndex];
 
   return (
     <section className="relative h-[500px] md:h-[600px] overflow-hidden">
@@ -147,19 +146,21 @@ export default function HeroBanner() {
       </div>
 
       {/* نقاط التنقل في البانر */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-        {displayItems.map((_, index) => (
-          <button
-            key={index}
-            className={`w-2 h-2 rounded-full transition-all ${
-              activeIndex === index 
-                ? "bg-white w-6" 
-                : "bg-white/50 hover:bg-white/80"
-            }`}
-            onClick={() => setActiveIndex(index)}
-          />
-        ))}
-      </div>
+      {bannerItems.length > 1 && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+          {bannerItems.map((_, index) => (
+            <button
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all ${
+                activeIndex === index 
+                  ? "bg-white w-6" 
+                  : "bg-white/50 hover:bg-white/80"
+              }`}
+              onClick={() => setActiveIndex(index)}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

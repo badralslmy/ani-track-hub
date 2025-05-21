@@ -21,6 +21,23 @@ interface AniListMedia {
   popularity: number;
   season: string;
   seasonYear: number;
+  nextAiringEpisode?: {
+    airingAt: number;
+    timeUntilAiring: number;
+    episode: number;
+  };
+  airingSchedule?: {
+    nodes: {
+      airingAt: number;
+      episode: number;
+    }[];
+  };
+  streamingEpisodes?: {
+    title: string;
+    url: string;
+    thumbnail: string;
+    site: string;
+  }[];
 }
 
 interface AniListResponse {
@@ -55,6 +72,23 @@ export const fetchAnimeById = async (id: number): Promise<AniListMedia> => {
         popularity
         season
         seasonYear
+        nextAiringEpisode {
+          airingAt
+          timeUntilAiring
+          episode
+        }
+        airingSchedule {
+          nodes {
+            airingAt
+            episode
+          }
+        }
+        streamingEpisodes {
+          title
+          url
+          thumbnail
+          site
+        }
       }
     }
   `;
@@ -111,6 +145,17 @@ export const searchAnime = async (searchTerm: string): Promise<AniListMedia[]> =
           popularity
           season
           seasonYear
+          nextAiringEpisode {
+            airingAt
+            timeUntilAiring
+            episode
+          }
+          airingSchedule {
+            nodes {
+              airingAt
+              episode
+            }
+          }
         }
       }
     }

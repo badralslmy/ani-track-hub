@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import CountdownTimer from "@/components/anime/CountdownTimer";
 import { CalendarClock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAnimeByCategory } from "@/services/supabaseService";
 
 interface CountdownItem {
   id: string;
@@ -12,8 +14,30 @@ interface CountdownItem {
 }
 
 export default function CountdownSection() {
-  // نموذج لحلقات قادمة (يمكن استبداله بنظام بيانات حقيقي)
-  const [upcomingEpisodes] = useState<CountdownItem[]>([]);
+  // استخدام React Query لجلب بيانات الأنمي التي لها حلقات قادمة
+  const { data: animeList, isLoading, error } = useQuery({
+    queryKey: ['animeWithUpcomingEpisodes'],
+    queryFn: async () => {
+      try {
+        // محاولة جلب أنمي من فئة مخصصة للحلقات القادمة إذا كانت موجودة
+        // أو يمكن استخدام جميع الأنمي وتصفيتها حسب وجود تاريخ للحلقة القادمة
+        const allAnime = await fetchAnimeByCategory('upcoming_episodes');
+        return allAnime.filter(anime => anime.next_episode_date != null);
+      } catch (error) {
+        console.error("Error fetching upcoming episodes:", error);
+        return [];
+      }
+    },
+    refetchOnWindowFocus: false
+  });
+
+  // تحويل البيانات إلى تنسيق العد التنازلي
+  const upcomingEpisodes: CountdownItem[] = animeList?.map(anime => ({
+    id: anime.id,
+    title: anime.title,
+    releaseDate: anime.next_episode_date ? new Date(anime.next_episode_date) : new Date(),
+    image: anime.cover_image || "/placeholder.svg"
+  })) || [];
   
   // إذا لم تكن هناك حلقات قادمة، نظهر رسالة بدلاً من العد التنازلي
   if (upcomingEpisodes.length === 0) {
