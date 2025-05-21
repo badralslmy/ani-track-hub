@@ -62,19 +62,12 @@ const AdminDashboard = () => {
   };
 
   return (
-    <AppLayout noContainer>
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen w-full">
-          <AdminSidebar />
-          <SidebarInset>
-            <div className="container py-6">
-              <div className="flex flex-col gap-6">
-                {renderContent()}
-              </div>
-            </div>
-          </SidebarInset>
+    <AppLayout>
+      <div className="container py-6">
+        <div className="flex flex-col gap-6">
+          {renderContent()}
         </div>
-      </SidebarProvider>
+      </div>
     </AppLayout>
   );
 };

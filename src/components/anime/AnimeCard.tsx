@@ -22,11 +22,11 @@ export default function AnimeCard({
 }: AnimeCardProps) {
   return (
     <Link to={`/anime/${id}`} className="anime-card">
-      <div className="relative">
+      <div className="relative rounded-xl overflow-hidden">
         <img
           src={image}
           alt={title}
-          className="anime-card-image"
+          className="anime-card-image rounded-xl"
           loading="lazy"
         />
         {(episodesWatched !== undefined && totalEpisodes !== undefined) && (
@@ -40,7 +40,7 @@ export default function AnimeCard({
             </p>
           </div>
         )}
-        <div className="anime-card-content">
+        <div className="anime-card-content rounded-b-xl">
           {rating !== undefined && (
             <div className="flex items-center mb-1 text-yellow-400">
               <StarIcon size={14} className="fill-yellow-400" />

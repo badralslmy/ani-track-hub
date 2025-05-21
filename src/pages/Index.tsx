@@ -2,13 +2,7 @@
 import AppLayout from "@/components/layout/AppLayout";
 import HeroBanner from "@/components/home/HeroBanner";
 import AnimeSection from "@/components/home/AnimeSection";
-import { 
-  trendingAnime,
-  continueWatchingAnime,
-  seasonalAnime,
-  newReleaseAnime,
-  recommendedAnime 
-} from "@/data/mock"; // استخدام البيانات الوهمية كاحتياطي
+import CountdownSection from "@/components/home/CountdownSection";
 
 const Index = () => {
   // تحديد أقسام الأنمي التي سيتم عرضها
@@ -17,37 +11,39 @@ const Index = () => {
       title: "متابعة المشاهدة", 
       viewAllLink: "/mylist", 
       categoryName: "continue_watching",
-      fallbackAnimeList: continueWatchingAnime
+      fallbackAnimeList: []
     },
     { 
       title: "الأكثر مشاهدة", 
       viewAllLink: "/browse?sort=trending", 
       categoryName: "trending",
-      fallbackAnimeList: trendingAnime
+      fallbackAnimeList: []
     },
     { 
       title: "أحدث الإصدارات", 
       viewAllLink: "/browse?sort=newest", 
       categoryName: "new_releases",
-      fallbackAnimeList: newReleaseAnime
+      fallbackAnimeList: []
     },
     { 
       title: "أنمي الموسم", 
       viewAllLink: "/browse?season=current", 
       categoryName: "season_anime",
-      fallbackAnimeList: seasonalAnime
+      fallbackAnimeList: []
     },
     { 
       title: "مُوصى به لك", 
       viewAllLink: "/browse?recommended=true", 
       categoryName: "recommended",
-      fallbackAnimeList: recommendedAnime
+      fallbackAnimeList: []
     }
   ];
 
   return (
     <AppLayout>
       <HeroBanner />
+      
+      <CountdownSection />
       
       {sections.map((section, index) => (
         <AnimeSection

@@ -10,21 +10,12 @@ import {
   Settings,
   FolderIcon,
 } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 
 export default function AdminSidebar() {
   const location = useLocation();
-  const currentPath = location.pathname;
+  const searchParams = new URLSearchParams(location.search);
+  const currentTab = searchParams.get("tab") || "overview";
   
   const menuItems = [
     {
@@ -70,41 +61,33 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b">
-        <div className="flex items-center justify-between p-2">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl">لوحة الإدارة</span>
+    <div className="bg-card border-l p-4 w-64">
+      <div className="border-b pb-2 mb-4">
+        <h2 className="font-bold text-xl">لوحة الإدارة</h2>
+      </div>
+      
+      <nav className="flex flex-col gap-1">
+        {menuItems.map((item) => (
+          <Link 
+            key={item.value}
+            to={`/admin?tab=${item.value}`}
+            className={`flex items-center gap-2 p-2 rounded-md hover:bg-muted ${
+              currentTab === item.value ? "bg-secondary text-secondary-foreground font-medium" : ""
+            }`}
+          >
+            <item.icon className="h-5 w-5" />
+            <span>{item.title}</span>
           </Link>
-          <SidebarTrigger />
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <div className="py-4">
-          <SidebarMenu>
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.value}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={currentPath.includes(`/admin?tab=${item.value}`)}
-                >
-                  <Link to={`/admin?tab=${item.value}`}>
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </div>
-      </SidebarContent>
-      <SidebarFooter className="border-t p-4">
+        ))}
+      </nav>
+      
+      <div className="mt-8 pt-4 border-t">
         <Link to="/">
           <Button variant="outline" className="w-full">
             العودة إلى الموقع
           </Button>
         </Link>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </div>
   );
 }

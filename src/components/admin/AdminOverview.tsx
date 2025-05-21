@@ -14,10 +14,7 @@ const AdminOverview = () => {
             <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,248</div>
-            <p className="text-xs text-muted-foreground">
-              +180 منذ الشهر الماضي
-            </p>
+            <div className="text-2xl font-bold">0</div>
           </CardContent>
         </Card>
         
@@ -27,10 +24,7 @@ const AdminOverview = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5,723</div>
-            <p className="text-xs text-muted-foreground">
-              +456 منذ الشهر الماضي
-            </p>
+            <div className="text-2xl font-bold">0</div>
           </CardContent>
         </Card>
         
@@ -40,10 +34,7 @@ const AdminOverview = () => {
             <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12,354</div>
-            <p className="text-xs text-muted-foreground">
-              +1,234 منذ الشهر الماضي
-            </p>
+            <div className="text-2xl font-bold">0</div>
           </CardContent>
         </Card>
         
@@ -53,10 +44,7 @@ const AdminOverview = () => {
             <PieChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,845</div>
-            <p className="text-xs text-muted-foreground">
-              +324 منذ الشهر الماضي
-            </p>
+            <div className="text-2xl font-bold">0</div>
           </CardContent>
         </Card>
       </div>
@@ -68,7 +56,7 @@ const AdminOverview = () => {
           </CardHeader>
           <CardContent>
             <div className="text-muted-foreground text-center py-8">
-              سيتم عرض مخطط النشاط هنا
+              لا يوجد نشاط حالياً
             </div>
           </CardContent>
         </Card>
@@ -78,18 +66,8 @@ const AdminOverview = () => {
             <CardTitle>أفضل الأنمي</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-2 h-8 bg-anitrack-purple rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="font-medium">اسم الأنمي {i}</p>
-                    <p className="text-xs text-muted-foreground">
-                      متوسط التقييم {(Math.random() * 10).toFixed(1)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="text-muted-foreground text-center py-8">
+              لا يوجد أنمي مضاف بعد
             </div>
           </CardContent>
         </Card>
